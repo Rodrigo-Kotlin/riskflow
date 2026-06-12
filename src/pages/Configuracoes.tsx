@@ -1,0 +1,164 @@
+import { useState } from 'react'
+import { Settings, Moon, Sun, Download, Upload, Trash2, Shield, Building2 } from 'lucide-react'
+import { useApp } from '@/components/layout/AppShell'
+import { exportData, importData, clearAllData } from '@/lib/storage'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { FormSection, InputField } from '@/components/forms/FormSection'
+
+export function Configuracoes() {
+  const { toasts } = useApp()
+  const [darkMode, setDarkMode] = useState(false)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
+
+  const handleExport = () => {
+    const data = exportData()
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `riskflow-backup-${new Date().toISOString().split('T')[0]}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    toasts.addToast('success', 'Exportado', 'Backup dos dados exportado com sucesso.')
+  }
+
+  const handleImport = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = async (e: any) => {
+      try {
+        const file = e.target.files[0]
+        const text = await file.text()
+        const data = JSON.parse(text)
+        importData(data)
+        toasts.addToast('success', 'Importado', 'Dados importados com sucesso. Atualize a página.')
+      } catch {
+        toasts.addToast('error', 'Erro', 'Falha ao importar o arquivo.')
+      }
+    }
+    input.click()
+  }
+
+  const handleClearDemo = () => {
+    clearAllData()
+    toasts.addToast('success', 'Limpo', 'Dados de demonstração removidos. Atualize a página.')
+    setShowClearConfirm(false)
+  }
+
+  const toggleDark = () => {
+    setDarkMode(!darkMode)
+    document.documentElement.classList.toggle('dark')
+  }
+
+  return (
+    <div className="max-w-4xl">
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-text-primary">Configurações</h1>
+        <p className="text-sm text-text-secondary">Preferências do sistema e gerenciamento de dados</p>
+      </div>
+
+      <div className="space-y-4">
+        <FormSection title="Preferências do Sistema">
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3">
+              {darkMode ? <Moon size={20} className="text-text-primary" /> : <Sun size={20} className="text-text-primary" />}
+              <div>
+                <p className="text-sm font-medium text-text-primary">Modo escuro</p>
+                <p className="text-xs text-text-secondary">Alternar entre tema claro e escuro</p>
+              </div>
+            </div>
+            <button
+              onClick={toggleDark}
+              className={`relative w-12 h-6 rounded-full transition-colors ${darkMode ? 'bg-brand-500' : 'bg-gray-300'}`}
+            >
+              <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${darkMode ? 'translate-x-6' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+        </FormSection>
+
+        <FormSection title="Dados da Empresa Efetiva">
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center">
+                <Shield size={20} className="text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-text-primary">Efetiva RiskFlow</p>
+                <p className="text-xs text-text-secondary">LPR/AEP Digital v1.0</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-text-secondary">
+              <span>CNPJ: 00.000.000/0001-00</span>
+              <span>Responsável: Carlos Silva</span>
+              <span>Registro: MTE 12345</span>
+              <span>E-mail: contato@efetiva.com</span>
+            </div>
+          </div>
+        </FormSection>
+
+        <FormSection title="Usuários e Perfis" collapsible defaultOpen={false}>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+              <div>
+                <p className="text-sm font-medium">Carlos Silva</p>
+                <p className="text-xs text-text-secondary">carlos@efetiva.com — Admin</p>
+              </div>
+              <span className="text-xs px-2 py-1 bg-brand-100 text-brand-500 rounded-full font-medium">Admin</span>
+            </div>
+            <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+              <div>
+                <p className="text-sm font-medium">Ana Oliveira</p>
+                <p className="text-xs text-text-secondary">ana@efetiva.com — Técnico</p>
+              </div>
+              <span className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-full font-medium">Técnico</span>
+            </div>
+            <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+              <div>
+                <p className="text-sm font-medium">Pedro Santos</p>
+                <p className="text-xs text-text-secondary">pedro@efetiva.com — Visualizador</p>
+              </div>
+              <span className="text-xs px-2 py-1 bg-gray-100 text-text-secondary rounded-full font-medium">Visualizador</span>
+            </div>
+          </div>
+        </FormSection>
+
+        <FormSection title="Backup e Exportação de Dados">
+          <div className="flex flex-col md:flex-row gap-3">
+            <button onClick={handleExport} className="flex items-center justify-center gap-2 h-10 px-4 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
+              <Download size={16} /> Exportar Backup
+            </button>
+            <button onClick={handleImport} className="flex items-center justify-center gap-2 h-10 px-4 border border-border text-text-secondary text-sm font-medium rounded-lg hover:bg-gray-50">
+              <Upload size={16} /> Importar Backup
+            </button>
+          </div>
+        </FormSection>
+
+        <FormSection title="Limpar Dados">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Trash2 size={20} className="text-risk-high shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-risk-high">Limpar dados de demonstração</p>
+                <p className="text-xs text-red-700 mt-1">Remove todos os dados salvos localmente, mantendo apenas usuário e preferências. Esta ação não pode ser desfeita.</p>
+                <button onClick={() => setShowClearConfirm(true)} className="mt-2 h-8 px-3 bg-risk-high text-white text-xs font-medium rounded-lg hover:bg-red-700">
+                  Limpar Dados
+                </button>
+              </div>
+            </div>
+          </div>
+        </FormSection>
+      </div>
+
+      <ConfirmDialog
+        open={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        onConfirm={handleClearDemo}
+        title="Limpar todos os dados?"
+        message="Todos os dados salvos serão removidos permanentemente. Os dados de usuário e preferências serão mantidos."
+        confirmText="Limpar Tudo"
+        variant="danger"
+      />
+    </div>
+  )
+}
