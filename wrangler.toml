@@ -1,0 +1,9 @@
+name = "efetiva-riskflow"
+pages_build_output_dir = "dist"
+
+[env.production]
+# VITE_* env vars must be configured in Cloudflare Pages Dashboard:
+# Settings > Environment variables > Production
+#   VITE_SUPABASE_URL = https://zimpkkxvykyiibvpercl.supabase.co
+#   VITE_SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+#   VITE_ENABLE_DEMO_DATA = false
