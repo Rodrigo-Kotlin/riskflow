@@ -1,14 +1,17 @@
-import { Menu, Bell, User, LogOut } from 'lucide-react'
+import { Menu, Bell, User, LogOut, Wifi, WifiOff } from 'lucide-react'
 import { useState } from 'react'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 
 interface HeaderProps {
   onMenuClick: () => void
   user: { nome: string; email: string } | null
   onLogout: () => void
+  notificationCount?: number
 }
 
-export function Header({ onMenuClick, user, onLogout }: HeaderProps) {
+export function Header({ onMenuClick, user, onLogout, notificationCount = 0 }: HeaderProps) {
   const [showMenu, setShowMenu] = useState(false)
+  const online = useOnlineStatus()
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-border">
@@ -16,21 +19,28 @@ export function Header({ onMenuClick, user, onLogout }: HeaderProps) {
         <button onClick={onMenuClick} className="lg:hidden p-2 text-text-secondary hover:text-text-primary rounded-lg hover:bg-gray-100" aria-label="Abrir menu">
           <Menu size={22} />
         </button>
-        <div className="hidden lg:flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">RF</span>
-          </div>
-          <span className="font-semibold text-text-primary">Efetiva RiskFlow</span>
-        </div>
+
+        <div className="hidden lg:block" />
+
         <div className="flex items-center gap-2 ml-auto">
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs text-text-secondary">
+            {online ? <Wifi size={14} className="text-risk-low" /> : <WifiOff size={14} className="text-risk-moderate" />}
+            <span>{online ? 'Online' : 'Offline'}</span>
+          </div>
+
           <button className="p-2 text-text-secondary hover:text-text-primary rounded-lg hover:bg-gray-100 relative" aria-label="Notificações">
             <Bell size={20} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-risk-high" />
+            {notificationCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-risk-high text-white text-[10px] font-bold flex items-center justify-center">
+                {notificationCount > 9 ? '9+' : notificationCount}
+              </span>
+            )}
           </button>
+
           <div className="relative">
             <button onClick={() => setShowMenu(!showMenu)} className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100">
               <div className="w-7 h-7 rounded-full bg-brand-100 text-brand-500 flex items-center justify-center text-xs font-bold">
-                {user?.nome.charAt(0).toUpperCase() || 'U'}
+                {user?.nome?.charAt(0).toUpperCase() || 'U'}
               </div>
               <span className="hidden sm:block text-sm font-medium text-text-primary max-w-[120px] truncate">{user?.nome || 'Usuário'}</span>
             </button>

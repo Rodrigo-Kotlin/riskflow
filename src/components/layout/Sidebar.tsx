@@ -24,8 +24,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   return (
     <>
       <div className={`fixed inset-0 z-40 bg-black/30 lg:hidden ${open ? 'block' : 'hidden'}`} onClick={onClose} />
-      <aside className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-border transform transition-transform duration-200 lg:translate-x-0 lg:static lg:z-auto ${open ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex items-center justify-between h-14 px-4 border-b border-border">
+      <aside className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-border flex flex-col transform transition-transform duration-200 lg:translate-x-0 lg:static lg:z-auto ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex items-center justify-between h-14 shrink-0 px-4 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
               <span className="text-white font-bold text-sm">RF</span>
@@ -39,7 +39,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             <X size={20} />
           </button>
         </div>
-        <nav className="p-3 space-y-1">
+
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {links.map((link) => {
             const isActive = location.pathname === link.to || (link.to !== '/dashboard' && location.pathname.startsWith(link.to))
             return (
@@ -58,9 +59,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             )
           })}
         </nav>
-        <div className="absolute bottom-4 left-3 right-3 p-3 rounded-lg bg-gradient-to-r from-brand-500/10 to-brand-lighter/10 border border-brand-200">
-          <p className="text-xs font-medium text-brand-500">RiskFlow v1.0</p>
-          <p className="text-[10px] text-text-secondary">Pronto para uso em campo</p>
+
+        <div className="shrink-0 p-3 border-t border-border">
+          <div className="p-3 rounded-lg bg-gradient-to-r from-brand-500/10 to-brand-lighter/10 border border-brand-200">
+            <p className="text-xs font-medium text-brand-500">RiskFlow v1.0</p>
+            <p className="text-[10px] text-text-secondary">Pronto para uso em campo</p>
+          </div>
         </div>
       </aside>
     </>
