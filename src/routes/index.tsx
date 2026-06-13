@@ -1,5 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { AuthLayout } from '@/components/layout/AuthLayout'
+import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout'
 import { PrivateRoute } from '@/components/auth/PrivateRoute'
 
 const Login = lazy(() => import('@/pages/Login').then(m => ({ default: m.Login })))
@@ -21,20 +23,24 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route element={<PrivateRoute />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/empresas" element={<Empresas />} />
-        <Route path="/levantamentos" element={<Levantamentos />} />
-        <Route path="/levantamentos/novo" element={<NovoLevantamento />} />
-        <Route path="/levantamentos/:id" element={<NovoLevantamento />} />
-        <Route path="/biblioteca" element={<Biblioteca />} />
-        <Route path="/relatorios" element={<Relatorios />} />
-        <Route path="/configuracoes" element={<Configuracoes />} />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Route>
-    </Routes>
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+        </Route>
+        <Route element={<PrivateRoute />}>
+          <Route element={<AuthenticatedLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/empresas" element={<Empresas />} />
+            <Route path="/levantamentos" element={<Levantamentos />} />
+            <Route path="/levantamentos/novo" element={<NovoLevantamento />} />
+            <Route path="/levantamentos/:id" element={<NovoLevantamento />} />
+            <Route path="/biblioteca" element={<Biblioteca />} />
+            <Route path="/relatorios" element={<Relatorios />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Route>
+        </Route>
+      </Routes>
     </Suspense>
   )
 }

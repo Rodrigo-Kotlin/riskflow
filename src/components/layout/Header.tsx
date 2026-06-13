@@ -1,17 +1,17 @@
 import { Menu, Bell, User, LogOut, Wifi, WifiOff } from 'lucide-react'
 import { useState } from 'react'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { useApp } from '@/components/layout/AppShell'
 
 interface HeaderProps {
   onMenuClick: () => void
-  user: { nome: string; email: string } | null
-  onLogout: () => void
-  notificationCount?: number
 }
 
-export function Header({ onMenuClick, user, onLogout, notificationCount = 0 }: HeaderProps) {
+export function Header({ onMenuClick }: HeaderProps) {
+  const { user, signOut } = useApp()
   const [showMenu, setShowMenu] = useState(false)
   const online = useOnlineStatus()
+  const notificationCount = 0
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-border">
@@ -55,7 +55,7 @@ export function Header({ onMenuClick, user, onLogout, notificationCount = 0 }: H
                   <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:bg-gray-50 hover:text-text-primary">
                     <User size={16} /> Perfil
                   </button>
-                  <button onClick={onLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-risk-high hover:bg-red-50">
+                  <button onClick={signOut} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-risk-high hover:bg-red-50">
                     <LogOut size={16} /> Sair
                   </button>
                 </div>
