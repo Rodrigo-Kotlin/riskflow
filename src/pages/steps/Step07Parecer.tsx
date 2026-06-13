@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { AlertCircle, FileText, Sparkles } from 'lucide-react'
+import { AlertCircle, Sparkles } from 'lucide-react'
 import { Levantamento } from '@/types'
 import { NIVEIS_RISCO } from '@/constants'
 
@@ -10,8 +9,6 @@ interface Props {
 }
 
 export function Step07Parecer({ data, updateData, toasts }: Props) {
-  const [editando, setEditando] = useState(false)
-
   const gerarParecer = () => {
     const riscosCriticos = data.riscos.filter((r: any) => r.nivel === NIVEIS_RISCO.CRITICO)
     const riscosAltos = data.riscos.filter((r: any) => r.nivel === NIVEIS_RISCO.ALTO)

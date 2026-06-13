@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Assinatura, Levantamento } from '@/types'
-import { formatDate, generateId } from '@/lib/utils'
+import { Levantamento } from '@/types'
+import { formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
 import { SignaturePad } from '@/components/forms/SignaturePad'
 import { CheckCircle2, AlertCircle, FileDown, FileText, FileJson, Download, Check } from 'lucide-react'

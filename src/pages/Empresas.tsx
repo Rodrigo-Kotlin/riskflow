@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Empresa } from '@/types'
 import { useEmpresas } from '@/hooks/useEmpresas'
 import { useApp } from '@/components/layout/AppShell'
-import { generateId, formatDate } from '@/lib/utils'
+import { generateId } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Badge } from '@/components/ui/Badge'
 import { SkeletonCard, SkeletonRow } from '@/components/ui/Skeleton'
 import {
-  Building2, Plus, Search, Edit3, Trash2, MapPin, Phone, Mail, User
+  Building2, Plus, Search, Edit3, Trash2, MapPin, User
 } from 'lucide-react'
 
 const emptyEmpresa: Empresa = {

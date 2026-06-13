@@ -10,7 +10,6 @@ import { SkeletonRow } from '@/components/ui/Skeleton'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import ReportDocument from '@/components/report/ReportDocument'
 import { FileText, Search, Eye, Download, ArrowLeft } from 'lucide-react'
-import { Modal } from '@/components/ui/Modal'
 import { STATUS_LEVANTAMENTO } from '@/constants'
 
 const ITENS_POR_PAGINA = 20

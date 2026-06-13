@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Settings, Moon, Sun, Download, Upload, Trash2, Shield, Building2 } from 'lucide-react'
+import { Moon, Sun, Download, Upload, Trash2, Shield } from 'lucide-react'
 import { useApp } from '@/components/layout/AppShell'
 import { exportData, importData, clearAllData } from '@/lib/storage'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { FormSection, InputField } from '@/components/forms/FormSection'
+import { FormSection } from '@/components/forms/FormSection'
 
 export function Configuracoes() {
   const { toasts } = useApp()

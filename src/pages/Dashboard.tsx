@@ -35,7 +35,7 @@ export function Dashboard() {
   }, [levantamentos, search])
 
   const categoriasAgrupadas = useMemo(() => agruparRiscos(levantamentos), [levantamentos])
-  const maxRiscosValor = useMemo(() => Math.max(...categoriasAgrupadas.map(([_, v]) => v), 1), [categoriasAgrupadas])
+  const maxRiscosValor = useMemo(() => Math.max(...categoriasAgrupadas.map(([, v]) => v), 1), [categoriasAgrupadas])
   const temDados = total > 0
 
   return (
