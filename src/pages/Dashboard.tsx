@@ -142,7 +142,7 @@ export function Dashboard() {
                       <div
                         key={l.id}
                         className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-border transition-all cursor-pointer"
-                        onClick={() => navigate(`/levantamentos/novo`)}
+                        onClick={() => navigate(`/levantamentos/${l.id}`)}
                       >
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">

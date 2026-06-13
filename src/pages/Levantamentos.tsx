@@ -148,8 +148,8 @@ export function Levantamentos() {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => navigate('/levantamentos/novo')} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" title="Abrir" aria-label="Ver levantamento"><Eye size={14} /></button>
-                        <button onClick={() => navigate('/levantamentos/novo')} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" title="Editar" aria-label="Editar levantamento"><Edit3 size={14} /></button>
+                        <button onClick={() => navigate(`/levantamentos/${l.id}`)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" title="Abrir" aria-label="Ver levantamento"><Eye size={14} /></button>
+                        <button onClick={() => navigate(`/levantamentos/${l.id}`)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" title="Editar" aria-label="Editar levantamento"><Edit3 size={14} /></button>
                         <button onClick={() => duplicate(l)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" title="Duplicar" aria-label="Duplicar levantamento"><Copy size={14} /></button>
                         <button onClick={() => setDeleteId(l.id)} className="p-1.5 text-text-secondary hover:text-risk-high rounded hover:bg-red-50" title="Excluir" aria-label="Excluir levantamento"><Trash2 size={14} /></button>
                         {l.status === STATUS_LEVANTAMENTO.CONCLUIDO && <button className="p-1.5 text-text-secondary hover:text-brand-500 rounded hover:bg-green-50" title="Exportar" aria-label="Exportar levantamento"><FileDown size={14} /></button>}
@@ -184,7 +184,7 @@ export function Levantamentos() {
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                   <span className="text-xs text-text-secondary">{formatDate(l.dataLevantamento)} · {l.riscos.length} riscos</span>
                   <div className="flex gap-1">
-                    <button onClick={() => navigate('/levantamentos/novo')} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" aria-label="Ver levantamento"><Eye size={14} /></button>
+                    <button onClick={() => navigate(`/levantamentos/${l.id}`)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" aria-label="Ver levantamento"><Eye size={14} /></button>
                     <button onClick={() => duplicate(l)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" aria-label="Duplicar levantamento"><Copy size={14} /></button>
                     <button onClick={() => setDeleteId(l.id)} className="p-1.5 text-text-secondary hover:text-risk-high rounded hover:bg-red-50" aria-label="Excluir levantamento"><Trash2 size={14} /></button>
                   </div>
