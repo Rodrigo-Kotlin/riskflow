@@ -29,8 +29,8 @@ export async function signUp(email: string, senha: string, nome: string, perfil:
 }
 
 export async function signOut() {
-  const client = getClient()
-  const { error } = await client.auth.signOut()
+  if (!supabaseConfigurado || !supabase) return
+  const { error } = await supabase.auth.signOut()
   if (error) throw new Error(tratarErroAuth(error))
 }
 

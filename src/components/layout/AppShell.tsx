@@ -23,7 +23,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, setUser, loading: authLoading, signOut } = useSupabaseAuth()
 
   const handleLogout = async () => {
-    await signOut()
+    try {
+      await signOut()
+    } catch {
+      // fallback: always clear local state
+    }
+    setUser(null)
+    localStorage.removeItem('riskflow_auth')
     navigate('/login')
   }
 
