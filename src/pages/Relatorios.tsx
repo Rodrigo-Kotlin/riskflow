@@ -113,7 +113,7 @@ export function Relatorios() {
         <EmptyState icon={<FileText size={40} />} title="Nenhum relatório encontrado" description="Finalize um levantamento para gerar relatórios." />
       ) : (
         <>
-          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-border">
