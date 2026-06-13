@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Levantamento, Relatorio } from '@/types'
 import { useLevantamentos } from '@/hooks/useLevantamentos'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
@@ -23,7 +23,7 @@ export function Relatorios() {
   const loading = levantamentosLoading
   const [pagina, setPagina] = useState(1)
 
-  useEffect(() => setPagina(1), [search])
+
 
   const concluidos = useMemo(() => levantamentos.filter(l => l.status === STATUS_LEVANTAMENTO.CONCLUIDO), [levantamentos])
 
@@ -66,7 +66,7 @@ export function Relatorios() {
             <ArrowLeft size={16} /> Voltar
           </button>
           <div className="flex items-center gap-2">
-            <select value={modelo} onChange={(e) => setModelo(e.target.value as any)} className="h-9 px-3 rounded-lg border border-border text-sm bg-white">
+            <select value={modelo} onChange={(e) => setModelo(e.target.value as 'Completo' | 'Executivo')} className="h-9 px-3 rounded-lg border border-border text-sm bg-white">
               <option value="Completo">Modelo Completo</option>
               <option value="Executivo">Modelo Executivo</option>
             </select>
@@ -89,7 +89,7 @@ export function Relatorios() {
 
       <div className="relative mb-4">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por empresa..." className="w-full h-10 pl-9 pr-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
+        <input value={search} onChange={(e) => { setSearch(e.target.value); setPagina(1); }} placeholder="Buscar por empresa..." className="w-full h-10 pl-9 pr-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
       </div>
 
       {loading ? (

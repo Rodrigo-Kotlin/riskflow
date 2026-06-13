@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useId } from 'react'
 import { X } from 'lucide-react'
 
 interface ModalProps {
@@ -23,7 +23,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
-  const titleIdRef = useRef(`modal-title-${Math.random().toString(36).slice(2, 8)}`)
+  const titleId = useId()
 
   useEffect(() => {
     if (open) {
@@ -79,9 +79,9 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
 
   return (
     <div ref={overlayRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={(e) => { if (e.target === overlayRef.current) onClose() }}>
-      <div ref={contentRef} role="dialog" aria-modal="true" aria-labelledby={titleIdRef.current} className={`${sizes[size]} w-full bg-white rounded-xl shadow-xl max-h-[90vh] flex flex-col`}>
+      <div ref={contentRef} role="dialog" aria-modal="true" aria-labelledby={`modal-title-${titleId}`} className={`${sizes[size]} w-full bg-white rounded-xl shadow-xl max-h-[90vh] flex flex-col`}>
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 id={titleIdRef.current} className="text-lg font-semibold text-text-primary">{title}</h3>
+          <h3 id={`modal-title-${titleId}`} className="text-lg font-semibold text-text-primary">{title}</h3>
           <button onClick={onClose} className="p-1 text-text-secondary hover:text-text-primary rounded-lg hover:bg-gray-100" aria-label="Fechar">
             <X size={20} />
           </button>

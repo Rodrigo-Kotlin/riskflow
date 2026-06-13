@@ -23,6 +23,7 @@ export function useLevantamentos() {
     }
   }, [])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load() }, [load])
 
   const add = useCallback(async (levantamento: Levantamento) => {

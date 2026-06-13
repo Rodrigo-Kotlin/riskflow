@@ -26,9 +26,11 @@ export function Configuracoes() {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.json'
-    input.onchange = async (e: any) => {
+    input.onchange = async (e: Event) => {
       try {
-        const file = e.target.files[0]
+        const target = e.target as HTMLInputElement;
+        if (!target.files?.length) return;
+        const file = target.files[0]
         const text = await file.text()
         const data = JSON.parse(text)
         importData(data)

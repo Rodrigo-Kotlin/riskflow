@@ -31,7 +31,7 @@ export function Step06Controles({ data, updateData }: Props) {
   const riscos = data.riscos || []
 
   const gerarControles = () => {
-    const novos = riscos.filter((r: any) => !controles.some((c: Controle) => c.riscoId === r.id)).flatMap((r: any) => {
+    const novos = riscos.filter((r) => !controles.some((c: Controle) => c.riscoId === r.id)).flatMap((r) => {
       const items: Controle[] = []
       const prefix = r.perigo
       if (r.controleFonte) items.push({ id: generateId(), riscoId: r.id, acao: r.controleFonte, origem: prefix, tipo: TIPOS_CONTROLE[0], responsavel: '', prazo: '', prioridade: PRIORIDADE_CONTROLE.MEDIA, status: STATUS_CONTROLE.PENDENTE, custoEstimado: '', observacoes: '' })
@@ -182,14 +182,14 @@ export function Step06Controles({ data, updateData }: Props) {
           </InputField>
           <InputField label="Origem do Risco" inputId="controle-origem"><input id="controle-origem" value={form.origem} onChange={(e) => setForm({ ...form, origem: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Tipo de Controle" inputId="controle-tipo">
-            <select id="controle-tipo" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as any })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
+            <select id="controle-tipo" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as Controle['tipo'] })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
               {TIPOS_CONTROLE.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
             </select>
           </InputField>
           <InputField label="Responsável" inputId="controle-responsavel"><input id="controle-responsavel" value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Prazo" inputId="controle-prazo"><input id="controle-prazo" type="date" value={form.prazo} onChange={(e) => setForm({ ...form, prazo: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Prioridade" inputId="controle-prioridade">
-            <select id="controle-prioridade" value={form.prioridade} onChange={(e) => setForm({ ...form, prioridade: e.target.value as any })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
+            <select id="controle-prioridade" value={form.prioridade} onChange={(e) => setForm({ ...form, prioridade: e.target.value as Controle['prioridade'] })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
               <option value={PRIORIDADE_CONTROLE.BAIXA}>{PRIORIDADE_CONTROLE.BAIXA}</option>
               <option value={PRIORIDADE_CONTROLE.MEDIA}>{PRIORIDADE_CONTROLE.MEDIA}</option>
               <option value={PRIORIDADE_CONTROLE.ALTA}>{PRIORIDADE_CONTROLE.ALTA}</option>
@@ -197,7 +197,7 @@ export function Step06Controles({ data, updateData }: Props) {
             </select>
           </InputField>
           <InputField label="Status" inputId="controle-status">
-            <select id="controle-status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as any })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
+            <select id="controle-status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as Controle['status'] })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
               <option value={STATUS_CONTROLE.NAO_INICIADO}>{STATUS_CONTROLE.NAO_INICIADO}</option>
               <option value={STATUS_CONTROLE.PENDENTE}>{STATUS_CONTROLE.PENDENTE}</option>
               <option value={STATUS_CONTROLE.EM_ANDAMENTO}>{STATUS_CONTROLE.EM_ANDAMENTO}</option>

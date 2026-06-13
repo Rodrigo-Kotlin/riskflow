@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Levantamento } from '@/types'
 import { useLevantamentos } from '@/hooks/useLevantamentos'
@@ -27,7 +27,7 @@ export function Levantamentos() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [pagina, setPagina] = useState(1)
 
-  useEffect(() => setPagina(1), [search, statusFilter, tipoFilter])
+
 
   const filtered = useMemo(() => levantamentos.filter(l => {
     const matchSearch = !search || l.empresaNome.toLowerCase().includes(search.toLowerCase()) || l.codigo.toLowerCase().includes(search.toLowerCase()) || l.setor.toLowerCase().includes(search.toLowerCase())
@@ -91,12 +91,12 @@ export function Levantamentos() {
       <div className="flex flex-col md:flex-row gap-3 mb-4">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por empresa, código ou setor..." className="w-full h-10 pl-9 pr-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
+          <input value={search} onChange={(e) => { setSearch(e.target.value); setPagina(1); }} placeholder="Buscar por empresa, código ou setor..." className="w-full h-10 pl-9 pr-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
         </div>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 px-3 rounded-lg border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/70">
+        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPagina(1); }} className="h-10 px-3 rounded-lg border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/70">
           {statusOptions.map(s => <option key={s} value={s}>{s === 'Todos' ? 'Status: Todos' : s}</option>)}
         </select>
-        <select value={tipoFilter} onChange={(e) => setTipoFilter(e.target.value)} className="h-10 px-3 rounded-lg border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/70">
+        <select value={tipoFilter} onChange={(e) => { setTipoFilter(e.target.value); setPagina(1); }} className="h-10 px-3 rounded-lg border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/70">
           {tipoOptions.map(t => <option key={t} value={t}>{t === 'Todos' ? 'Tipo: Todos' : t}</option>)}
         </select>
       </div>

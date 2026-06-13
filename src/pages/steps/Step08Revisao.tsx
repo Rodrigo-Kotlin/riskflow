@@ -10,7 +10,7 @@ interface Props {
   data: Levantamento
   updateData: (partial: Partial<Levantamento>) => void
   onFinish: () => void
-  toasts: any
+  toasts: { addToast: (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => void }
 }
 
 export function Step08Revisao({ data, updateData, onFinish, toasts }: Props) {
@@ -260,15 +260,15 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   )
 }
 
-function agrupar(arr: any[], key: string): Record<string, number> {
-  return (arr || []).reduce((acc: Record<string, number>, item: any) => {
-    const k = item[key] || 'Outros'
+function agrupar<T>(arr: T[], key: keyof T): Record<string, number> {
+  return (arr || []).reduce((acc: Record<string, number>, item: T) => {
+    const k = String(item[key] || 'Outros')
     acc[k] = (acc[k] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 }
 
-function ReportPreviewContent({ data, onBack }: { data: any; onBack: () => void }) {
+function ReportPreviewContent({ data, onBack }: { data: Levantamento; onBack: () => void }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -318,7 +318,7 @@ function ReportPreviewContent({ data, onBack }: { data: any; onBack: () => void 
               </tr>
             </thead>
             <tbody>
-              {(data.riscos || []).map((r: any) => (
+              {(data.riscos || []).map((r) => (
                 <tr key={r.id} className="border-t border-border">
                   <td className="p-2 font-medium">{r.perigo}</td>
                   <td className="p-2">{r.categoria}</td>

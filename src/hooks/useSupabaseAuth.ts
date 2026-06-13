@@ -25,10 +25,10 @@ export function useSupabaseAuth() {
           if (profile) {
             setUser({
               id: session.user.id,
-              nome: (profile as any).nome || session.user.email?.split('@')[0] || '',
-              email: (profile as any).email || session.user.email || '',
+              nome: profile.nome || session.user.email?.split('@')[0] || '',
+              email: profile.email || session.user.email || '',
               senha: '',
-              perfil: (profile as any).perfil || 'visualizador',
+              perfil: (profile.perfil as Usuario['perfil']) || 'visualizador',
             })
           }
         }
@@ -52,10 +52,10 @@ export function useSupabaseAuth() {
           const profile = await getProfile(session.user.id)
           const u: Usuario = {
             id: session.user.id,
-            nome: (profile as any).nome || session.user.email?.split('@')[0] || '',
-            email: (profile as any).email || session.user.email || '',
+            nome: profile.nome || session.user.email?.split('@')[0] || '',
+            email: profile.email || session.user.email || '',
             senha: '',
-            perfil: (profile as any).perfil || 'visualizador',
+            perfil: (profile.perfil as Usuario['perfil']) || 'visualizador',
           }
           setUser(u)
           localStorage.setItem('riskflow_auth', JSON.stringify(u))

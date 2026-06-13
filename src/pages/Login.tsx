@@ -50,7 +50,7 @@ export function Login() {
     setTouched({ nome: true, email: true, senha: true, confirmar: true })
     if (!camposValidos) return
     if (!supabaseConfigurado) {
-      setError('Servidor não configurado. Verifique as variáveis de ambiente do Supabase.')
+      setError('Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no ambiente de deploy.')
       return
     }
     setError('')
@@ -117,7 +117,7 @@ export function Login() {
             <form onSubmit={handleLogin} noValidate className="space-y-4">
               {!supabaseConfigurado && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                  Servidor não configurado. As credenciais do Supabase não foram definidas.
+                  Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no ambiente de deploy.
                 </div>
               )}
               {error && (

@@ -3,7 +3,7 @@ import type { Empresa, Levantamento, Usuario } from '@/types'
 
 function getClient() {
   if (!supabaseConfigurado || !supabase) {
-    throw new Error('Servidor não configurado. Verifique as variáveis de ambiente do Supabase.')
+    throw new Error('Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no ambiente de deploy.')
   }
   return supabase
 }
@@ -191,9 +191,10 @@ export async function deleteLevantamento(id: string) {
 
 // ─── Error handler ──────────────────────────────────────────────────────────
 
-function tratarErroAuth(error: any): string {
-  const code = error?.code || error?.status || ''
-  const message = error?.message || ''
+function tratarErroAuth(error: unknown): string {
+  const err = error as Record<string, unknown>
+  const code = String(err?.code || err?.status || '')
+  const message = String(err?.message || '')
 
   if (message.includes('Invalid login credentials')) return 'E-mail ou senha inválidos.'
   if (message.includes('Email not confirmed')) return 'E-mail ainda não confirmado. Verifique sua caixa de entrada.'
@@ -209,7 +210,12 @@ function tratarErroAuth(error: any): string {
 
 // ─── Mappers ────────────────────────────────────────────────────────────────
 
-function mapEmpresaFromSupabase(data: any): Empresa {
+interface SupabaseEmpresa {
+  id: string; razao_social?: string; nome_fantasia?: string; cnpj?: string; cnae?: string; grau_risco?: string;
+  endereco?: string; cidade?: string; uf?: string; responsavel?: string; telefone?: string; email?: string; observacoes?: string; created_at?: string;
+}
+
+function mapEmpresaFromSupabase(data: SupabaseEmpresa): Empresa {
   return {
     id: data.id,
     razaoSocial: data.razao_social || '',
@@ -228,7 +234,11 @@ function mapEmpresaFromSupabase(data: any): Empresa {
   }
 }
 
-function mapLevantamentoFromSupabase(data: any): Levantamento {
+interface SupabaseLevantamento {
+  id: string; tipo: Levantamento['tipo']; codigo?: string; empresa_id?: string; empresa_nome?: string; cnpj?: string; unidade?: string; setor?: string; responsavel_empresa?: string; auditor_tecnico?: string; registro_mte?: string; data_levantamento?: string; data_lancamento_sgg?: string; responsavel_lancamento?: string; status: Levantamento['status']; percentual?: number; caracteristicas?: Levantamento['caracteristicas']; medicoes?: Levantamento['medicoes']; colaboradores?: Levantamento['colaboradores']; riscos?: Levantamento['riscos']; controles?: Levantamento['controles']; parecer?: Levantamento['parecer']; assinatura_tecnico?: Levantamento['assinaturaTecnico']; assinatura_empresa?: Levantamento['assinaturaEmpresa']; created_at?: string; updated_at?: string;
+}
+
+function mapLevantamentoFromSupabase(data: SupabaseLevantamento): Levantamento {
   return {
     id: data.id,
     tipo: data.tipo,
@@ -246,7 +256,7 @@ function mapLevantamentoFromSupabase(data: any): Levantamento {
     responsavelLancamento: data.responsavel_lancamento || '',
     status: data.status,
     percentual: data.percentual || 0,
-    caracteristicas: data.caracteristicas ?? {},
+    caracteristicas: (data.caracteristicas as Levantamento['caracteristicas']) ?? ({} as Levantamento['caracteristicas']),
     medicoes: data.medicoes ?? [],
     colaboradores: data.colaboradores ?? [],
     riscos: data.riscos ?? [],
@@ -259,7 +269,7 @@ function mapLevantamentoFromSupabase(data: any): Levantamento {
   }
 }
 
-function toSnakeCase(l: Levantamento): Record<string, any> {
+function toSnakeCase(l: Levantamento): Record<string, unknown> {
   return {
     id: l.id,
     tipo: l.tipo,
@@ -277,13 +287,13 @@ function toSnakeCase(l: Levantamento): Record<string, any> {
     responsavel_lancamento: l.responsavelLancamento,
     status: l.status,
     percentual: l.percentual,
-    caracteristicas: l.caracteristicas as any,
-    medicoes: l.medicoes as any,
-    colaboradores: l.colaboradores as any,
-    riscos: l.riscos as any,
-    controles: l.controles as any,
-    parecer: l.parecer as any,
-    assinatura_tecnico: l.assinaturaTecnico as any,
-    assinatura_empresa: l.assinaturaEmpresa as any,
+    caracteristicas: l.caracteristicas,
+    medicoes: l.medicoes,
+    colaboradores: l.colaboradores,
+    riscos: l.riscos,
+    controles: l.controles,
+    parecer: l.parecer,
+    assinatura_tecnico: l.assinaturaTecnico,
+    assinatura_empresa: l.assinaturaEmpresa,
   }
 }
