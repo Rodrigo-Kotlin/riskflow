@@ -19,9 +19,10 @@ const iconBg: Record<string, string> = {
 }
 
 export function StatCard({ icon: Icon, label, value, variant = 'default', onClick, className }: StatCardProps) {
+  const Component = onClick ? 'button' : 'div'
   return (
-    <button
-      onClick={onClick}
+    <Component
+      {...(onClick ? { onClick, type: 'button' as const } : {})}
       className={cn(
         'flex items-start gap-4 p-4 bg-card border border-border rounded-xl hover:shadow-md transition-all text-left w-full',
         onClick && 'cursor-pointer',
@@ -35,6 +36,6 @@ export function StatCard({ icon: Icon, label, value, variant = 'default', onClic
         <p className="text-2xl font-bold text-text-primary">{value}</p>
         <p className="text-xs text-text-secondary">{label}</p>
       </div>
-    </button>
+    </Component>
   )
 }

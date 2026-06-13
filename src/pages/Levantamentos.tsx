@@ -81,7 +81,7 @@ export function Levantamentos() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-text-primary">Levantamentos</h1>
-          <p className="text-sm text-text-secondary">{levantamentos.length} registro(s)</p>
+          <p className="text-sm text-text-secondary">{filtered.length} de {levantamentos.length} registro(s)</p>
         </div>
         <button onClick={() => navigate('/levantamentos/novo')} className="flex items-center justify-center gap-2 h-10 px-4 bg-brand-500 hover:bg-brand-600 text-white font-medium rounded-lg transition-colors">
           <Plus size={18} /> <span>Novo Levantamento</span>
@@ -103,7 +103,7 @@ export function Levantamentos() {
 
       {loading ? (
         <>
-          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-border">
@@ -127,7 +127,7 @@ export function Levantamentos() {
         <EmptyState icon={<ClipboardList size={40} />} title="Nenhum levantamento encontrado" description="Crie um novo levantamento para começar" action={<button onClick={() => navigate('/levantamentos/novo')} className="h-9 px-4 bg-brand-500 text-white text-sm font-medium rounded-lg">Novo Levantamento</button>} />
       ) : (
         <>
-          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-border">

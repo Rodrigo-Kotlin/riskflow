@@ -121,12 +121,12 @@ export function Login() {
                 </div>
               )}
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-risk-high">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-risk-high" role="alert">
                   {error}
                 </div>
               )}
               {sucesso && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-risk-low">
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-risk-low" role="status">
                   {sucesso}
                 </div>
               )}
@@ -238,12 +238,12 @@ export function Login() {
 
             <div className="mt-5 text-center space-y-2">
               {isLogin && (
-                <button type="button" onClick={() => setShowForgot(true)} className="text-xs text-brand-500 hover:text-brand-600 font-medium transition-colors">
+                <button type="button" onClick={() => setShowForgot(true)} className="text-xs text-brand-500 hover:text-brand-600 font-medium transition-colors py-2">
                   Esqueci minha senha
                 </button>
               )}
               {showForgot && (
-                <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg">
+                <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg" role="alert">
                   Funcionalidade em desenvolvimento. Entre em contato com o suporte para redefinir sua senha.
                 </div>
               )}

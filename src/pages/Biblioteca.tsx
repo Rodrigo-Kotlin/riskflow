@@ -55,8 +55,8 @@ export function Biblioteca() {
                   <h4 className="text-sm font-semibold text-text-primary">{r.perigo}</h4>
                   <p className="text-xs text-text-secondary mt-1 line-clamp-2">{r.dano}</p>
                   <div className="mt-2 pt-2 border-t border-border">
-                    <p className="text-[10px] text-text-secondary"><span className="font-medium">Fonte:</span> {r.fonteGeradora}</p>
-                    <p className="text-[10px] text-text-secondary mt-0.5"><span className="font-medium">Controle:</span> {r.controleFonte}</p>
+                    <p className="text-[11px] text-text-secondary"><span className="font-medium">Fonte:</span> {r.fonteGeradora}</p>
+                    <p className="text-[11px] text-text-secondary mt-0.5"><span className="font-medium">Controle:</span> {r.controleFonte}</p>
                   </div>
                 </div>
               ))}

@@ -8,7 +8,7 @@ interface SkeletonLineProps {
 
 export function SkeletonLine({ h = 'h-4', w = 'w-full', className }: SkeletonLineProps) {
   return (
-    <div className={cn('animate-pulse bg-gray-200 rounded', h, w, className)} />
+    <div className={cn('animate-pulse bg-gray-200 rounded', h, w, className)} aria-hidden="true" />
   )
 }
 

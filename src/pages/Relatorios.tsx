@@ -15,12 +15,12 @@ import { STATUS_LEVANTAMENTO } from '@/constants'
 const ITENS_POR_PAGINA = 20
 
 export function Relatorios() {
-  const { levantamentos } = useLevantamentos()
+  const { levantamentos, loading: levantamentosLoading } = useLevantamentos()
   const [relatorios, setRelatorios] = useLocalStorage<Relatorio[]>('riskflow_relatorios', [])
   const [search, setSearch] = useState('')
   const [previewLev, setPreviewLev] = useState<Levantamento | null>(null)
   const [modelo, setModelo] = useState<'Completo' | 'Executivo'>('Completo')
-  const [loading] = useState(false)
+  const loading = levantamentosLoading
   const [pagina, setPagina] = useState(1)
 
   useEffect(() => setPagina(1), [search])
@@ -84,7 +84,7 @@ export function Relatorios() {
     <div className="max-w-6xl">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-text-primary">Relatórios</h1>
-        <p className="text-sm text-text-secondary">{allRelatorios.length} relatório(s) disponíveis</p>
+        <p className="text-sm text-text-secondary">{filtered.length} de {allRelatorios.length} relatório(s)</p>
       </div>
 
       <div className="relative mb-4">
@@ -113,7 +113,7 @@ export function Relatorios() {
         <EmptyState icon={<FileText size={40} />} title="Nenhum relatório encontrado" description="Finalize um levantamento para gerar relatórios." />
       ) : (
         <>
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-border">
@@ -159,6 +159,38 @@ export function Relatorios() {
               </tbody>
             </table>
           </div>
+
+          <div className="md:hidden space-y-3">
+            {itensPagina.map((r) => (
+              <div key={r.id} className="bg-card border border-border rounded-xl p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-text-primary truncate">{r.empresaNome}</p>
+                    <p className="text-xs text-text-secondary mt-0.5">{r.tipo} — {formatDate(r.data)}</p>
+                  </div>
+                  <Badge variant={r.status === 'Gerado' ? 'success' : 'default'}>{r.status}</Badge>
+                </div>
+                <div className="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-border">
+                  <button onClick={() => {
+                    const l = levantamentos.find(lv => lv.id === r.levantamentoId)
+                    if (l) setPreviewLev(l)
+                  }} className="flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 font-medium">
+                    <Eye size={14} /> Visualizar
+                  </button>
+                  {(() => {
+                    const lv = levantamentos.find(lv => lv.id === r.levantamentoId)
+                    if (!lv) return null
+                    return (
+                      <PDFDownloadLink document={<ReportDocument levantamento={lv} />} fileName={`relatorio-${lv.codigo}.pdf`} className="flex items-center gap-1 text-xs text-text-secondary hover:text-text-primary font-medium">
+                        {({ loading }) => <>{loading ? 'Gerando...' : <><Download size={14} /> PDF</>}</>}
+                      </PDFDownloadLink>
+                    )
+                  })()}
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
             <button
               onClick={() => setPagina(p => Math.max(1, p - 1))}

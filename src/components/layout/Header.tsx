@@ -25,7 +25,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="hidden lg:block" />
 
         <div className="flex items-center gap-2 ml-auto">
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs text-text-secondary">
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs text-text-secondary" aria-live="polite">
             {online ? <Wifi size={14} className="text-risk-low" /> : <WifiOff size={14} className="text-risk-moderate" />}
             <span>{online ? 'Online' : 'Offline'}</span>
           </div>
@@ -33,7 +33,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           <button onClick={() => toasts.addToast('info', 'Notificações', 'Nenhuma notificação no momento.')} className="p-2 text-text-secondary hover:text-text-primary rounded-lg hover:bg-gray-100 relative" aria-label="Notificações">
             <Bell size={20} />
             {notificationCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-risk-high text-white text-[10px] font-bold flex items-center justify-center">
+              <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-risk-high text-white text-[11px] font-bold flex items-center justify-center">
                 {notificationCount > 9 ? '9+' : notificationCount}
               </span>
             )}
