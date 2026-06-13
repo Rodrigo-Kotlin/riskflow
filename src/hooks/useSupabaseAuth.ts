@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, supabaseConfigurado } from '@/lib/supabase'
 import { getProfile, signIn as supabaseSignIn, signOut as supabaseSignOut } from '@/services/supabase.service'
 import type { Usuario } from '@/types'
 
@@ -9,6 +9,15 @@ export function useSupabaseAuth() {
 
   useEffect(() => {
     const init = async () => {
+      if (!supabaseConfigurado || !supabase) {
+        const stored = localStorage.getItem('riskflow_auth')
+        if (stored) {
+          try { setUser(JSON.parse(stored)) } catch { /* ignore */ }
+        }
+        setLoading(false)
+        return
+      }
+
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
@@ -33,6 +42,8 @@ export function useSupabaseAuth() {
       }
     }
     init()
+
+    if (!supabaseConfigurado || !supabase) return
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {

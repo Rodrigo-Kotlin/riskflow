@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '@/components/layout/AppShell'
+import { supabaseConfigurado } from '@/lib/supabase'
 import { signIn, signUp } from '@/services/supabase.service'
 import { Shield, Eye, EyeOff, Loader2, UserPlus, LogIn } from 'lucide-react'
 
@@ -47,6 +48,10 @@ export function Login() {
     e.preventDefault()
     setTouched({ nome: true, email: true, senha: true, confirmar: true })
     if (!camposValidos) return
+    if (!supabaseConfigurado) {
+      setError('Servidor não configurado. Verifique as variáveis de ambiente do Supabase.')
+      return
+    }
     setError('')
     setSucesso('')
     setLoading(true)
@@ -74,8 +79,7 @@ export function Login() {
     setLoading(true)
     setError('')
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-      if (supabaseUrl && supabaseUrl !== 'https://placeholder.supabase.co') {
+      if (supabaseConfigurado) {
         try {
           await signIn('demo@riskflow.io', 'demo123456')
           navigate('/dashboard')
@@ -110,6 +114,11 @@ export function Login() {
             </div>
 
             <form onSubmit={handleLogin} noValidate className="space-y-4">
+              {!supabaseConfigurado && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                  Servidor não configurado. As credenciais do Supabase não foram definidas.
+                </div>
+              )}
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-risk-high">
                   {error}

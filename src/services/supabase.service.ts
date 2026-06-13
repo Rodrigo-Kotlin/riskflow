@@ -1,45 +1,58 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, supabaseConfigurado } from '@/lib/supabase'
 import type { Empresa, Levantamento, Usuario } from '@/types'
+
+function getClient() {
+  if (!supabaseConfigurado || !supabase) {
+    throw new Error('Servidor não configurado. Verifique as variáveis de ambiente do Supabase.')
+  }
+  return supabase
+}
 
 // ─── Auth ───────────────────────────────────────────────────────────────────
 
 export async function signIn(email: string, senha: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
-  if (error) throw error
+  const client = getClient()
+  const { data, error } = await client.auth.signInWithPassword({ email, password: senha })
+  if (error) throw new Error(tratarErroAuth(error))
   return data
 }
 
 export async function signUp(email: string, senha: string, nome: string, perfil: Usuario['perfil'] = 'visualizador') {
-  const { data, error } = await supabase.auth.signUp({
+  const client = getClient()
+  const { data, error } = await client.auth.signUp({
     email,
     password: senha,
     options: { data: { nome, perfil } },
   })
-  if (error) throw error
+  if (error) throw new Error(tratarErroAuth(error))
   return data
 }
 
 export async function signOut() {
-  const { error } = await supabase.auth.signOut()
-  if (error) throw error
+  const client = getClient()
+  const { error } = await client.auth.signOut()
+  if (error) throw new Error(tratarErroAuth(error))
 }
 
 export async function getSession() {
-  const { data, error } = await supabase.auth.getSession()
-  if (error) throw error
+  const client = getClient()
+  const { data, error } = await client.auth.getSession()
+  if (error) throw new Error(tratarErroAuth(error))
   return data.session
 }
 
 export async function getCurrentUser() {
-  const { data, error } = await supabase.auth.getUser()
-  if (error) throw error
+  const client = getClient()
+  const { data, error } = await client.auth.getUser()
+  if (error) throw new Error(tratarErroAuth(error))
   return data.user
 }
 
 // ─── Profile ────────────────────────────────────────────────────────────────
 
 export async function getProfile(userId: string) {
-  const { data, error } = await supabase
+  const client = getClient()
+  const { data, error } = await client
     .from('profiles')
     .select('id, nome, email, perfil')
     .eq('id', userId)
@@ -51,7 +64,8 @@ export async function getProfile(userId: string) {
 // ─── Empresas ───────────────────────────────────────────────────────────────
 
 export async function listEmpresas(): Promise<Empresa[]> {
-  const { data, error } = await supabase
+  const client = getClient()
+  const { data, error } = await client
     .from('empresas')
     .select('*')
     .order('created_at', { ascending: false })
@@ -60,8 +74,9 @@ export async function listEmpresas(): Promise<Empresa[]> {
 }
 
 export async function createEmpresa(empresa: Empresa) {
-  const { data: userData } = await supabase.auth.getUser()
-  const { data, error } = await supabase
+  const client = getClient()
+  const { data: userData } = await client.auth.getUser()
+  const { data, error } = await client
     .from('empresas')
     .insert({
       id: empresa.id,
@@ -86,7 +101,8 @@ export async function createEmpresa(empresa: Empresa) {
 }
 
 export async function updateEmpresa(empresa: Empresa) {
-  const { data, error } = await supabase
+  const client = getClient()
+  const { data, error } = await client
     .from('empresas')
     .update({
       razao_social: empresa.razaoSocial,
@@ -110,14 +126,16 @@ export async function updateEmpresa(empresa: Empresa) {
 }
 
 export async function deleteEmpresa(id: string) {
-  const { error } = await supabase.from('empresas').delete().eq('id', id)
+  const client = getClient()
+  const { error } = await client.from('empresas').delete().eq('id', id)
   if (error) throw error
 }
 
 // ─── Levantamentos ──────────────────────────────────────────────────────────
 
 export async function listLevantamentos(): Promise<Levantamento[]> {
-  const { data, error } = await supabase
+  const client = getClient()
+  const { data, error } = await client
     .from('levantamentos')
     .select('*')
     .order('created_at', { ascending: false })
@@ -126,7 +144,8 @@ export async function listLevantamentos(): Promise<Levantamento[]> {
 }
 
 export async function getLevantamento(id: string): Promise<Levantamento | null> {
-  const { data, error } = await supabase
+  const client = getClient()
+  const { data, error } = await client
     .from('levantamentos')
     .select('*')
     .eq('id', id)
@@ -136,9 +155,10 @@ export async function getLevantamento(id: string): Promise<Levantamento | null> 
 }
 
 export async function createLevantamento(levantamento: Levantamento) {
-  const { data: userData } = await supabase.auth.getUser()
+  const client = getClient()
+  const { data: userData } = await client.auth.getUser()
   const payload = toSnakeCase(levantamento)
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('levantamentos')
     .insert({ ...payload, user_id: userData?.user?.id })
     .select()
@@ -148,8 +168,9 @@ export async function createLevantamento(levantamento: Levantamento) {
 }
 
 export async function updateLevantamento(levantamento: Levantamento) {
+  const client = getClient()
   const payload = toSnakeCase(levantamento)
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('levantamentos')
     .update({ ...payload, updated_at: new Date().toISOString() })
     .eq('id', levantamento.id)
@@ -160,8 +181,27 @@ export async function updateLevantamento(levantamento: Levantamento) {
 }
 
 export async function deleteLevantamento(id: string) {
-  const { error } = await supabase.from('levantamentos').delete().eq('id', id)
+  const client = getClient()
+  const { error } = await client.from('levantamentos').delete().eq('id', id)
   if (error) throw error
+}
+
+// ─── Error handler ──────────────────────────────────────────────────────────
+
+function tratarErroAuth(error: any): string {
+  const code = error?.code || error?.status || ''
+  const message = error?.message || ''
+
+  if (message.includes('Invalid login credentials')) return 'E-mail ou senha inválidos.'
+  if (message.includes('Email not confirmed')) return 'E-mail ainda não confirmado. Verifique sua caixa de entrada.'
+  if (message.includes('User already registered')) return 'Este e-mail já está cadastrado.'
+  if (message.includes('Password should be at least 6 characters')) return 'A senha deve ter no mínimo 6 caracteres.'
+  if (message.includes('NetworkError') || message.includes('Failed to fetch')) return 'Erro de conexão com o servidor. Verifique sua internet.'
+  if (code === 'over_email_send_rate_limit') return 'Muitas tentativas. Aguarde um momento e tente novamente.'
+  if (code === 'over_request_rate_limit') return 'Muitas requisições. Aguarde um instante.'
+
+  if (import.meta.env.DEV) console.error('[Supabase Auth]', error)
+  return 'Erro ao conectar ao servidor. Tente novamente mais tarde.'
 }
 
 // ─── Mappers ────────────────────────────────────────────────────────────────
