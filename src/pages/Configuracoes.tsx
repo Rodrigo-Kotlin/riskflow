@@ -6,7 +6,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { FormSection } from '@/components/forms/FormSection'
 
 export function Configuracoes() {
-  const { toasts } = useApp()
+  const { user, toasts } = useApp()
   const [darkMode, setDarkMode] = useState(false)
   const [showClearConfirm, setShowClearConfirm] = useState(false)
 
@@ -77,50 +77,41 @@ export function Configuracoes() {
           </div>
         </FormSection>
 
-        <FormSection title="Dados da Empresa Efetiva">
+        <FormSection title="Perfil do Usuário">
           <div className="p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center">
                 <Shield size={20} className="text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-text-primary">Efetiva RiskFlow</p>
-                <p className="text-xs text-text-secondary">LPR/AEP Digital v1.0</p>
+                <p className="text-sm font-semibold text-text-primary">{user?.nome || 'Usuário'}</p>
+                <p className="text-xs text-text-secondary">{user?.email || 'Não informado'}</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-text-secondary">
-              <span>CNPJ: 00.000.000/0001-00</span>
-              <span>Responsável: Carlos Silva</span>
-              <span>Registro: MTE 12345</span>
-              <span>E-mail: contato@efetiva.com</span>
+              <span>Perfil: {user ? { admin: 'Administrador', tecnico: 'Técnico', visualizador: 'Visualizador' }[user.perfil] : '—'}</span>
+              <span>Registro profissional: Em breve</span>
             </div>
           </div>
         </FormSection>
 
         <FormSection title="Usuários e Perfis" collapsible defaultOpen={false}>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-              <div>
-                <p className="text-sm font-medium">Carlos Silva</p>
-                <p className="text-xs text-text-secondary">carlos@efetiva.com — Admin</p>
+          {user ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                <div>
+                  <p className="text-sm font-medium">{user.nome}</p>
+                  <p className="text-xs text-text-secondary">{user.email} — {{ admin: 'Administrador', tecnico: 'Técnico', visualizador: 'Visualizador' }[user.perfil]}</p>
+                </div>
+                <span className="text-xs px-2 py-1 bg-brand-100 text-brand-500 rounded-full font-medium capitalize">{{ admin: 'Admin', tecnico: 'Técnico', visualizador: 'Visualizador' }[user.perfil]}</span>
               </div>
-              <span className="text-xs px-2 py-1 bg-brand-100 text-brand-500 rounded-full font-medium">Admin</span>
+              <p className="text-xs text-text-secondary text-center pt-3 border-t border-border">
+                A gestão de usuários estará disponível em uma próxima versão.
+              </p>
             </div>
-            <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-              <div>
-                <p className="text-sm font-medium">Ana Oliveira</p>
-                <p className="text-xs text-text-secondary">ana@efetiva.com — Técnico</p>
-              </div>
-              <span className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-full font-medium">Técnico</span>
-            </div>
-            <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-              <div>
-                <p className="text-sm font-medium">Pedro Santos</p>
-                <p className="text-xs text-text-secondary">pedro@efetiva.com — Visualizador</p>
-              </div>
-              <span className="text-xs px-2 py-1 bg-gray-100 text-text-secondary rounded-full font-medium">Visualizador</span>
-            </div>
-          </div>
+          ) : (
+            <p className="text-sm text-text-secondary">Nenhum usuário autenticado.</p>
+          )}
         </FormSection>
 
         <FormSection title="Backup e Exportação de Dados">
