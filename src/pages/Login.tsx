@@ -1,21 +1,26 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '@/components/layout/AppShell'
-import { signIn } from '@/services/supabase.service'
-import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { signIn, signUp } from '@/services/supabase.service'
+import { Shield, Eye, EyeOff, Loader2, UserPlus, LogIn } from 'lucide-react'
 
 export function Login() {
   const navigate = useNavigate()
-  const { user, supabaseReady, signOut } = useApp()
+  const { user, supabaseReady } = useApp()
+  const [modo, setModo] = useState<'login' | 'cadastro'>('login')
+  const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
+  const [confirmarSenha, setConfirmarSenha] = useState('')
   const [showSenha, setShowSenha] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [touched, setTouched] = useState({ email: false, senha: false })
+  const [sucesso, setSucesso] = useState('')
+  const [touched, setTouched] = useState({ nome: false, email: false, senha: false, confirmar: false })
 
   const enableDemo = import.meta.env.VITE_ENABLE_DEMO_DATA === 'true'
   const currentYear = new Date().getFullYear()
+  const isLogin = modo === 'login'
 
   useEffect(() => {
     if (supabaseReady && user) {
@@ -23,21 +28,42 @@ export function Login() {
     }
   }, [user, supabaseReady, navigate])
 
+  const toggleModo = () => {
+    setModo(isLogin ? 'cadastro' : 'login')
+    setError('')
+    setSucesso('')
+    setTouched({ nome: false, email: false, senha: false, confirmar: false })
+  }
+
+  const nomeError = touched.nome && !nome.trim()
   const emailError = touched.email && !email.trim()
   const senhaError = touched.senha && !senha.trim()
-  const isValid = email.trim() && senha.trim()
+  const confirmarError = touched.confirmar && senha !== confirmarSenha
+  const camposValidos = isLogin
+    ? email.trim() && senha.trim()
+    : nome.trim() && email.trim() && senha.trim() && senha === confirmarSenha && senha.length >= 6
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setTouched({ email: true, senha: true })
-    if (!email.trim() || !senha.trim()) return
+    setTouched({ nome: true, email: true, senha: true, confirmar: true })
+    if (!camposValidos) return
     setError('')
+    setSucesso('')
     setLoading(true)
     try {
-      await signIn(email, senha)
-      navigate('/dashboard')
+      if (isLogin) {
+        await signIn(email, senha)
+        navigate('/dashboard')
+      } else {
+        await signUp(email, senha, nome)
+        setSucesso('Conta criada com sucesso! Faça login para continuar.')
+        setModo('login')
+        setSenha('')
+        setConfirmarSenha('')
+        setTouched({ nome: false, email: false, senha: false, confirmar: false })
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'E-mail ou senha inválidos.'
+      const msg = err instanceof Error ? err.message : 'Erro inesperado. Tente novamente.'
       setError(msg)
     } finally {
       setLoading(false)
@@ -89,6 +115,32 @@ export function Login() {
                   {error}
                 </div>
               )}
+              {sucesso && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-risk-low">
+                  {sucesso}
+                </div>
+              )}
+
+              {!isLogin && (
+                <div>
+                  <label htmlFor="cad-nome" className="block text-xs font-medium text-text-primary mb-1">
+                    Nome completo <span className="text-risk-high">*</span>
+                  </label>
+                  <input
+                    id="cad-nome"
+                    type="text"
+                    value={nome}
+                    onChange={(e) => { setNome(e.target.value); setTouched(p => ({ ...p, nome: true })) }}
+                    onBlur={() => setTouched(p => ({ ...p, nome: true }))}
+                    placeholder="Seu nome"
+                    autoComplete="name"
+                    className={`w-full h-10 px-3 rounded-lg border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500 transition-colors ${
+                      nomeError ? 'border-risk-high' : 'border-border'
+                    }`}
+                  />
+                  {nomeError && <p className="text-xs text-risk-high mt-1">O nome é obrigatório.</p>}
+                </div>
+              )}
 
               <div>
                 <label htmlFor="login-email" className="block text-xs font-medium text-text-primary mb-1">
@@ -105,11 +157,8 @@ export function Login() {
                   className={`w-full h-10 px-3 rounded-lg border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500 transition-colors ${
                     emailError ? 'border-risk-high' : 'border-border'
                   }`}
-                  required
                 />
-                {emailError && (
-                  <p className="text-xs text-risk-high mt-1">O e-mail é obrigatório.</p>
-                )}
+                {emailError && <p className="text-xs text-risk-high mt-1">O e-mail é obrigatório.</p>}
               </div>
 
               <div>
@@ -124,11 +173,10 @@ export function Login() {
                     onChange={(e) => { setSenha(e.target.value); setTouched(p => ({ ...p, senha: true })) }}
                     onBlur={() => setTouched(p => ({ ...p, senha: true }))}
                     placeholder="••••••••"
-                    autoComplete="current-password"
+                    autoComplete={isLogin ? 'current-password' : 'new-password'}
                     className={`w-full h-10 px-3 pr-10 rounded-lg border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500 transition-colors ${
                       senhaError ? 'border-risk-high' : 'border-border'
                     }`}
-                    required
                   />
                   <button
                     type="button"
@@ -139,28 +187,64 @@ export function Login() {
                     {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {senhaError && (
-                  <p className="text-xs text-risk-high mt-1">A senha é obrigatória.</p>
-                )}
+                {senhaError && <p className="text-xs text-risk-high mt-1">A senha é obrigatória.</p>}
               </div>
+
+              {!isLogin && (
+                <div>
+                  <label htmlFor="cad-confirmar" className="block text-xs font-medium text-text-primary mb-1">
+                    Confirmar senha <span className="text-risk-high">*</span>
+                  </label>
+                  <input
+                    id="cad-confirmar"
+                    type="password"
+                    value={confirmarSenha}
+                    onChange={(e) => { setConfirmarSenha(e.target.value); setTouched(p => ({ ...p, confirmar: true })) }}
+                    onBlur={() => setTouched(p => ({ ...p, confirmar: true }))}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    className={`w-full h-10 px-3 rounded-lg border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500 transition-colors ${
+                      confirmarError ? 'border-risk-high' : 'border-border'
+                    }`}
+                  />
+                  {confirmarError && <p className="text-xs text-risk-high mt-1">As senhas não conferem.</p>}
+                </div>
+              )}
 
               <button
                 type="submit"
-                disabled={loading || !isValid}
+                disabled={loading || !camposValidos}
                 className="w-full h-10 bg-brand-500 hover:bg-brand-600 disabled:bg-brand-300 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
-                  <><Loader2 size={18} className="animate-spin" /> Entrando...</>
+                  <><Loader2 size={18} className="animate-spin" /> {isLogin ? 'Entrando...' : 'Criando conta...'}</>
+                ) : isLogin ? (
+                  <><LogIn size={18} /> Entrar</>
                 ) : (
-                  'Entrar'
+                  <><UserPlus size={18} /> Criar conta</>
                 )}
               </button>
             </form>
 
-            <div className="mt-4 text-center">
-              <button className="text-xs text-brand-500 hover:text-brand-600 font-medium transition-colors">
-                Esqueci minha senha
-              </button>
+            <div className="mt-5 text-center space-y-2">
+              {isLogin && (
+                <button className="text-xs text-brand-500 hover:text-brand-600 font-medium transition-colors">
+                  Esqueci minha senha
+                </button>
+              )}
+              <div>
+                <button
+                  type="button"
+                  onClick={toggleModo}
+                  className="text-xs text-text-secondary hover:text-text-primary font-medium transition-colors"
+                >
+                  {isLogin ? (
+                    <>Não tem conta? <span className="text-brand-500">Criar conta</span></>
+                  ) : (
+                    <>Já tem conta? <span className="text-brand-500">Fazer login</span></>
+                  )}
+                </button>
+              </div>
             </div>
 
             {enableDemo && (
