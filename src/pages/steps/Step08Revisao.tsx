@@ -15,6 +15,18 @@ interface Props {
 
 export function Step08Revisao({ data, updateData, onFinish, toasts }: Props) {
   const [showReport, setShowReport] = useState(false)
+
+  const handleExportJSON = () => {
+    const json = JSON.stringify(data, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `levantamento-${data.codigo || data.id}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    toasts.addToast('success', 'Exportar JSON', 'Arquivo exportado com sucesso.')
+  }
   const riscosPorCat = agrupar(data.riscos, 'categoria')
   const riscosPorNivel = agrupar(data.riscos, 'nivel')
 
@@ -212,18 +224,18 @@ export function Step08Revisao({ data, updateData, onFinish, toasts }: Props) {
           <button onClick={() => setShowReport(true)} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
             <FileText size={16} /> Visualizar Relatório
           </button>
-          <button className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={() => toasts.addToast('info', 'Gerar PDF', 'Funcionalidade em desenvolvimento.')} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
             <FileDown size={16} /> Gerar PDF
           </button>
-          <button className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={handleExportJSON} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
             <FileJson size={16} /> Exportar JSON
           </button>
-          <button className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={() => toasts.addToast('info', 'Exportar CSV', 'Funcionalidade em desenvolvimento.')} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
             <Download size={16} /> Exportar CSV
           </button>
         </div>
         <div className="flex gap-2">
-          <button className="h-9 px-4 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={() => toasts.addToast('info', 'Solicitar Revisão', 'Funcionalidade em desenvolvimento.')} className="h-9 px-4 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
             Solicitar Revisão
           </button>
           <button

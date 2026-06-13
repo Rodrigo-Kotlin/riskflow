@@ -169,7 +169,7 @@ export function Levantamentos() {
                         <button onClick={() => navigate(`/levantamentos/${l.id}`)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" title="Editar" aria-label="Editar levantamento"><Edit3 size={14} /></button>
                         <button onClick={() => duplicate(l)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" title="Duplicar" aria-label="Duplicar levantamento"><Copy size={14} /></button>
                         <button onClick={() => setDeleteId(l.id)} disabled={isDeleting} className={`p-1.5 rounded hover:bg-red-50 ${isDeleting ? 'text-gray-300 cursor-not-allowed' : 'text-text-secondary hover:text-risk-high'}`} title="Excluir" aria-label="Excluir levantamento"><Trash2 size={14} /></button>
-                        {l.status === STATUS_LEVANTAMENTO.CONCLUIDO && <button className="p-1.5 text-text-secondary hover:text-brand-500 rounded hover:bg-green-50" title="Exportar" aria-label="Exportar levantamento"><FileDown size={14} /></button>}
+                        {l.status === STATUS_LEVANTAMENTO.CONCLUIDO && <button onClick={() => toasts.addToast('info', 'Exportar', 'Funcionalidade em desenvolvimento.')} className="p-1.5 text-text-secondary hover:text-brand-500 rounded hover:bg-green-50" title="Exportar" aria-label="Exportar levantamento"><FileDown size={14} /></button>}
                       </div>
                     </td>
                   </tr>

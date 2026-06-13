@@ -17,6 +17,7 @@ export function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [sucesso, setSucesso] = useState('')
+  const [showForgot, setShowForgot] = useState(false)
   const [touched, setTouched] = useState({ nome: false, email: false, senha: false, confirmar: false })
 
   const enableDemo = import.meta.env.VITE_ENABLE_DEMO_DATA === 'true'
@@ -237,9 +238,14 @@ export function Login() {
 
             <div className="mt-5 text-center space-y-2">
               {isLogin && (
-                <button className="text-xs text-brand-500 hover:text-brand-600 font-medium transition-colors">
+                <button type="button" onClick={() => setShowForgot(true)} className="text-xs text-brand-500 hover:text-brand-600 font-medium transition-colors">
                   Esqueci minha senha
                 </button>
+              )}
+              {showForgot && (
+                <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg">
+                  Funcionalidade em desenvolvimento. Entre em contato com o suporte para redefinir sua senha.
+                </div>
               )}
               <div>
                 <button
