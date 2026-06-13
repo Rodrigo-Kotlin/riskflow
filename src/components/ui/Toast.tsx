@@ -25,11 +25,11 @@ export function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
+    <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm" role="alert" aria-live="polite">
       {toasts.map((toast) => {
         const Icon = icons[toast.type]
         return (
-          <div key={toast.id} className={cn('flex items-start gap-3 p-4 rounded-lg shadow-lg animate-slide-in', styles[toast.type])}>
+          <div key={toast.id} className={cn('flex items-start gap-3 p-4 rounded-lg shadow-lg animate-slide-in', styles[toast.type])} role="status">
             <Icon size={20} className="shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm">{toast.title}</p>

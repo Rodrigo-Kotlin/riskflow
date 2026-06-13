@@ -28,7 +28,7 @@ interface Props {
   data: Levantamento
   updateData: (partial: Partial<Levantamento>) => void
   saveRascunho: () => void
-  toasts: any
+  toasts: { addToast: (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => void }
 }
 
 export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> }, Props>(

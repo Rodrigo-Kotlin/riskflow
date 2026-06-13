@@ -17,6 +17,7 @@ export function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [sucesso, setSucesso] = useState('')
+  const [showForgot, setShowForgot] = useState(false)
   const [touched, setTouched] = useState({ nome: false, email: false, senha: false, confirmar: false })
 
   const enableDemo = import.meta.env.VITE_ENABLE_DEMO_DATA === 'true'
@@ -49,7 +50,7 @@ export function Login() {
     setTouched({ nome: true, email: true, senha: true, confirmar: true })
     if (!camposValidos) return
     if (!supabaseConfigurado) {
-      setError('Servidor não configurado. Verifique as variáveis de ambiente do Supabase.')
+      setError('Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no ambiente de deploy.')
       return
     }
     setError('')
@@ -116,16 +117,16 @@ export function Login() {
             <form onSubmit={handleLogin} noValidate className="space-y-4">
               {!supabaseConfigurado && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                  Servidor não configurado. As credenciais do Supabase não foram definidas.
+                  Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no ambiente de deploy.
                 </div>
               )}
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-risk-high">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-risk-high" role="alert">
                   {error}
                 </div>
               )}
               {sucesso && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-risk-low">
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-risk-low" role="status">
                   {sucesso}
                 </div>
               )}
@@ -237,9 +238,14 @@ export function Login() {
 
             <div className="mt-5 text-center space-y-2">
               {isLogin && (
-                <button className="text-xs text-brand-500 hover:text-brand-600 font-medium transition-colors">
+                <button type="button" onClick={() => setShowForgot(true)} className="text-xs text-brand-500 hover:text-brand-600 font-medium transition-colors py-2">
                   Esqueci minha senha
                 </button>
+              )}
+              {showForgot && (
+                <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg" role="alert">
+                  Funcionalidade em desenvolvimento. Entre em contato com o suporte para redefinir sua senha.
+                </div>
               )}
               <div>
                 <button

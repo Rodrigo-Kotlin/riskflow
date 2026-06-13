@@ -81,7 +81,7 @@ export function NovoLevantamento() {
         {renderStep()}
       </div>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           {currentStep > 0 && (
             <button onClick={handleBack} className="flex items-center gap-1 h-10 px-4 text-sm font-medium text-text-secondary hover:text-text-primary bg-white border border-border rounded-lg hover:bg-gray-50">

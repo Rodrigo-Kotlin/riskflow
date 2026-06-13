@@ -20,7 +20,7 @@ export function BottomNavigation() {
           )}
         >
           <LayoutDashboard size={20} />
-          <span className="text-[10px] font-medium">Início</span>
+          <span className="text-[11px] font-medium">Início</span>
         </NavLink>
 
         <NavLink
@@ -31,7 +31,7 @@ export function BottomNavigation() {
           )}
         >
           <ClipboardList size={20} />
-          <span className="text-[10px] font-medium">LPR/AEP</span>
+          <span className="text-[11px] font-medium">LPR/AEP</span>
         </NavLink>
 
         <div className="flex items-center justify-center">
@@ -52,7 +52,7 @@ export function BottomNavigation() {
           )}
         >
           <BarChart3 size={20} />
-          <span className="text-[10px] font-medium">Relatórios</span>
+          <span className="text-[11px] font-medium">Relatórios</span>
         </NavLink>
 
         <NavLink
@@ -63,7 +63,7 @@ export function BottomNavigation() {
           )}
         >
           <BookOpen size={20} />
-          <span className="text-[10px] font-medium">Biblioteca</span>
+          <span className="text-[11px] font-medium">Biblioteca</span>
         </NavLink>
       </div>
     </nav>

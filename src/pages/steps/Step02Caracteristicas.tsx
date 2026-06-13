@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useEffect } from 'react'
+import { forwardRef, useImperativeHandle, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -38,7 +38,7 @@ interface Props {
 
 export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean> }, Props>(
   ({ data, updateData }, ref) => {
-    const c = data.caracteristicas || {}
+    const c = useMemo(() => data.caracteristicas || {}, [data.caracteristicas])
 
     const { register, handleSubmit, formState: { errors }, trigger, watch } = useForm<StepForm>({
       resolver: zodResolver(stepSchema),

@@ -1,8 +1,7 @@
 import { Risco } from '@/types'
 import { Badge } from '@/components/ui/Badge'
-import { getNivelBgClaro, formatDate } from '@/lib/utils'
-import { AlertTriangle, Eye, Copy, Trash2, Edit3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Eye, Copy, Trash2, Edit3 } from 'lucide-react'
 import { NIVEIS_RISCO, SITUACAO_RISCO } from '@/constants'
 
 interface RiskCardProps {

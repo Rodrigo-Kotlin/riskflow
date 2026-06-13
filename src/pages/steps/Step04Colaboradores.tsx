@@ -105,7 +105,7 @@ export function Step04Colaboradores({ data, updateData }: Props) {
           <InputField label="Setor" inputId="colaborador-setor"><input id="colaborador-setor" value={form.setor} onChange={(e) => setForm({ ...form, setor: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Posto de Trabalho" inputId="colaborador-posto"><input id="colaborador-posto" value={form.posto} onChange={(e) => setForm({ ...form, posto: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Status da Coleta" inputId="colaborador-statusColeta">
-            <select id="colaborador-statusColeta" value={form.statusColeta} onChange={(e) => setForm({ ...form, statusColeta: e.target.value as any })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
+            <select id="colaborador-statusColeta" value={form.statusColeta} onChange={(e) => setForm({ ...form, statusColeta: e.target.value as Colaborador['statusColeta'] })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
               <option value={STATUS_COLETA.PENDENTE}>{STATUS_COLETA.PENDENTE}</option>
               <option value={STATUS_COLETA.ENVIADO}>{STATUS_COLETA.ENVIADO}</option>
               <option value={STATUS_COLETA.RESPONDIDO}>{STATUS_COLETA.RESPONDIDO}</option>

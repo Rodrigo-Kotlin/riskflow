@@ -181,7 +181,7 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
             <input id="risco-pontuacao" value={`${form.severidade * form.probabilidade} — ${calcularNivelRisco(form.severidade, form.probabilidade).nivel}`} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-gray-50 font-bold" readOnly />
           </InputField>
           <InputField label="Situação do Risco" inputId="risco-situacao">
-            <select id="risco-situacao" value={form.situacao} onChange={(e) => setForm({ ...form, situacao: e.target.value as any })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
+            <select id="risco-situacao" value={form.situacao} onChange={(e) => setForm({ ...form, situacao: e.target.value as Risco['situacao'] })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
               <option value={SITUACAO_RISCO.CONTROLADO}>{SITUACAO_RISCO.CONTROLADO}</option>
               <option value={SITUACAO_RISCO.CONTROLE_INSUFICIENTE}>{SITUACAO_RISCO.CONTROLE_INSUFICIENTE}</option>
               <option value={SITUACAO_RISCO.NAO_CONTROLADO}>{SITUACAO_RISCO.NAO_CONTROLADO}</option>

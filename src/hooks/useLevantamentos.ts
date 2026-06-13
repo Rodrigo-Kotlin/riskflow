@@ -23,13 +23,15 @@ export function useLevantamentos() {
     }
   }, [])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load() }, [load])
 
   const add = useCallback(async (levantamento: Levantamento) => {
     try {
       const created = await createLevantamento(levantamento)
       setLevantamentos(prev => [created, ...prev])
-    } catch {
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('[useLevantamentos] Erro ao criar:', err)
       setLevantamentos(prev => [...prev, levantamento])
     }
   }, [])
@@ -38,17 +40,24 @@ export function useLevantamentos() {
     try {
       const updated = await updateLevantamento(levantamento)
       setLevantamentos(prev => prev.map(l => l.id === updated.id ? updated : l))
-    } catch {
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('[useLevantamentos] Erro ao atualizar:', err)
       setLevantamentos(prev => prev.map(l => l.id === levantamento.id ? levantamento : l))
     }
   }, [])
 
-  const remove = useCallback(async (id: string) => {
+  const remove = useCallback(async (id: string): Promise<void> => {
     try {
       await deleteLevantamento(id)
       setLevantamentos(prev => prev.filter(l => l.id !== id))
-    } catch {
-      setLevantamentos(prev => prev.filter(l => l.id !== id))
+    } catch (err) {
+      const logData: Record<string, unknown> = { operation: 'delete', entity: 'levantamento', id }
+      if (err instanceof Object) {
+        const e = err as Record<string, unknown>
+        logData.code = e?.code; logData.message = e?.message; logData.details = e?.details; logData.hint = e?.hint
+      }
+      console.error('[useLevantamentos] Erro ao excluir levantamento:', logData)
+      throw err
     }
   }, [])
 

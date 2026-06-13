@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Assinatura, Levantamento } from '@/types'
-import { formatDate, generateId } from '@/lib/utils'
+import { Levantamento } from '@/types'
+import { formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
 import { SignaturePad } from '@/components/forms/SignaturePad'
 import { CheckCircle2, AlertCircle, FileDown, FileText, FileJson, Download, Check } from 'lucide-react'
@@ -10,11 +10,23 @@ interface Props {
   data: Levantamento
   updateData: (partial: Partial<Levantamento>) => void
   onFinish: () => void
-  toasts: any
+  toasts: { addToast: (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => void }
 }
 
 export function Step08Revisao({ data, updateData, onFinish, toasts }: Props) {
   const [showReport, setShowReport] = useState(false)
+
+  const handleExportJSON = () => {
+    const json = JSON.stringify(data, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `levantamento-${data.codigo || data.id}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    toasts.addToast('success', 'Exportar JSON', 'Arquivo exportado com sucesso.')
+  }
   const riscosPorCat = agrupar(data.riscos, 'categoria')
   const riscosPorNivel = agrupar(data.riscos, 'nivel')
 
@@ -212,18 +224,18 @@ export function Step08Revisao({ data, updateData, onFinish, toasts }: Props) {
           <button onClick={() => setShowReport(true)} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
             <FileText size={16} /> Visualizar Relatório
           </button>
-          <button className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={() => toasts.addToast('info', 'Gerar PDF', 'Funcionalidade em desenvolvimento.')} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
             <FileDown size={16} /> Gerar PDF
           </button>
-          <button className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={handleExportJSON} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
             <FileJson size={16} /> Exportar JSON
           </button>
-          <button className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={() => toasts.addToast('info', 'Exportar CSV', 'Funcionalidade em desenvolvimento.')} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
             <Download size={16} /> Exportar CSV
           </button>
         </div>
         <div className="flex gap-2">
-          <button className="h-9 px-4 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={() => toasts.addToast('info', 'Solicitar Revisão', 'Funcionalidade em desenvolvimento.')} className="h-9 px-4 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
             Solicitar Revisão
           </button>
           <button
@@ -248,15 +260,15 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   )
 }
 
-function agrupar(arr: any[], key: string): Record<string, number> {
-  return (arr || []).reduce((acc: Record<string, number>, item: any) => {
-    const k = item[key] || 'Outros'
+function agrupar<T>(arr: T[], key: keyof T): Record<string, number> {
+  return (arr || []).reduce((acc: Record<string, number>, item: T) => {
+    const k = String(item[key] || 'Outros')
     acc[k] = (acc[k] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 }
 
-function ReportPreviewContent({ data, onBack }: { data: any; onBack: () => void }) {
+function ReportPreviewContent({ data, onBack }: { data: Levantamento; onBack: () => void }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -306,7 +318,7 @@ function ReportPreviewContent({ data, onBack }: { data: any; onBack: () => void 
               </tr>
             </thead>
             <tbody>
-              {(data.riscos || []).map((r: any) => (
+              {(data.riscos || []).map((r) => (
                 <tr key={r.id} className="border-t border-border">
                   <td className="p-2 font-medium">{r.perigo}</td>
                   <td className="p-2">{r.categoria}</td>

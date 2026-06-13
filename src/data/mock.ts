@@ -1,5 +1,5 @@
 import { Empresa, Usuario, Levantamento } from '@/types'
-import { generateId, today } from '@/lib/utils'
+import { today } from '@/lib/utils'
 
 export const usuariosMock: Usuario[] = [
   { id: 'u1', nome: 'Carlos Silva', email: 'carlos@efetiva.com', senha: 'riskflow', perfil: 'admin' },

@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Empresa } from '@/types'
 import { useEmpresas } from '@/hooks/useEmpresas'
 import { useApp } from '@/components/layout/AppShell'
-import { generateId, formatDate } from '@/lib/utils'
+import { generateId } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Badge } from '@/components/ui/Badge'
 import { SkeletonCard, SkeletonRow } from '@/components/ui/Skeleton'
 import {
-  Building2, Plus, Search, Edit3, Trash2, MapPin, Phone, Mail, User
+  Building2, Plus, Search, Edit3, Trash2, MapPin, User
 } from 'lucide-react'
 
 const emptyEmpresa: Empresa = {
@@ -60,11 +60,28 @@ export function Empresas() {
     setModalOpen(false)
   }
 
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const confirmDelete = async () => {
-    if (deleteId) {
+    if (!deleteId || isDeleting) return
+    setIsDeleting(true)
+    try {
       await remove(deleteId)
-      toasts.addToast('success', 'Excluído', 'Empresa removida.')
+      toasts.addToast('success', 'Excluído', 'Empresa removida com sucesso.')
+    } catch (err) {
+      const e = err as Record<string, unknown>
+      const code = e?.code as string | undefined
+      const msg = ((e?.message as string) ?? '').toLowerCase()
+      if (code === '42501' || msg.includes('permission denied') || msg.includes('not authorized')) {
+        toasts.addToast('error', 'Erro ao excluir', 'Você não tem permissão para excluir esta empresa.')
+      } else if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network error')) {
+        toasts.addToast('error', 'Erro ao excluir', 'Não foi possível excluir agora. Verifique a conexão e tente novamente.')
+      } else {
+        toasts.addToast('error', 'Erro ao excluir', 'Ocorreu um erro ao excluir a empresa.')
+      }
+    } finally {
       setDeleteId(null)
+      setIsDeleting(false)
     }
   }
 
@@ -87,7 +104,7 @@ export function Empresas() {
 
       {loading ? (
         <>
-          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-border">
@@ -137,7 +154,7 @@ export function Empresas() {
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-center gap-2">
                         <button onClick={() => openEdit(e)} className="p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-gray-100" aria-label="Editar empresa"><Edit3 size={16} /></button>
-                        <button onClick={() => setDeleteId(e.id)} className="p-1.5 text-text-secondary hover:text-risk-high rounded-lg hover:bg-red-50" aria-label="Excluir empresa"><Trash2 size={16} /></button>
+                        <button onClick={() => setDeleteId(e.id)} disabled={isDeleting} className={`p-1.5 rounded-lg hover:bg-red-50 ${isDeleting ? 'text-gray-300 cursor-not-allowed' : 'text-text-secondary hover:text-risk-high'}`} aria-label="Excluir empresa"><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
@@ -156,7 +173,7 @@ export function Empresas() {
                   </div>
                   <div className="flex gap-1 shrink-0">
                     <button onClick={() => openEdit(e)} className="p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-gray-100" aria-label="Editar empresa"><Edit3 size={16} /></button>
-                    <button onClick={() => setDeleteId(e.id)} className="p-1.5 text-text-secondary hover:text-risk-high rounded-lg hover:bg-red-50" aria-label="Excluir empresa"><Trash2 size={16} /></button>
+                    <button onClick={() => setDeleteId(e.id)} disabled={isDeleting} className={`p-1.5 rounded-lg hover:bg-red-50 ${isDeleting ? 'text-gray-300 cursor-not-allowed' : 'text-text-secondary hover:text-risk-high'}`} aria-label="Excluir empresa"><Trash2 size={16} /></button>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-3 text-xs text-text-secondary">

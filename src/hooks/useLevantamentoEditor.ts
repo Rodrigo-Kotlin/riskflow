@@ -30,6 +30,25 @@ function criarRascunhoVazio(): Levantamento {
   }
 }
 
+function hasDraftContent(d: Levantamento): boolean {
+  return !!(
+    d.empresaNome?.trim() ||
+    d.cnpj?.trim() ||
+    d.unidade?.trim() ||
+    d.setor?.trim() ||
+    d.responsavelEmpresa?.trim() ||
+    d.auditorTecnico?.trim() ||
+    d.registroMTE?.trim() ||
+    d.caracteristicas?.setor?.trim() ||
+    (d.caracteristicas?.qtdColaboradores ?? 0) > 0 ||
+    d.medicoes.length > 0 ||
+    d.colaboradores.length > 0 ||
+    d.riscos.length > 0 ||
+    d.controles.length > 0 ||
+    d.parecer?.texto?.trim()
+  )
+}
+
 function calcularPercentual(d: Levantamento): number {
   let total = 0
   if (d.empresaNome) total += 12.5
@@ -67,6 +86,15 @@ export function useLevantamentoEditor() {
   const salvarRascunho = useCallback(async () => {
     const updated = { ...levantamento, updatedAt: new Date().toISOString().split('T')[0] }
     setLevantamento(updated)
+
+    const vazio = !hasDraftContent(updated)
+    if (vazio && !id && !storedRef.current) {
+      if (hasInteracted.current) {
+        toasts.addToast('info', 'Nada a salvar', 'Preencha os dados do levantamento para salvar.')
+      }
+      return
+    }
+
     try {
       if (id || storedRef.current) {
         await updateLevantamento(updated)
@@ -118,10 +146,6 @@ export function useLevantamentoEditor() {
       })
     }
   }, [id])
-
-  useEffect(() => {
-    salvarRascunho()
-  }, [])
 
   const handleNext = useCallback(() => {
     salvarRascunho()

@@ -1,22 +1,19 @@
-import { useState } from 'react'
-import { AlertCircle, FileText, Sparkles } from 'lucide-react'
+import { AlertCircle, Sparkles } from 'lucide-react'
 import { Levantamento } from '@/types'
 import { NIVEIS_RISCO } from '@/constants'
 
 interface Props {
   data: Levantamento
   updateData: (partial: Partial<Levantamento>) => void
-  toasts: any
+  toasts: { addToast: (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => void }
 }
 
 export function Step07Parecer({ data, updateData, toasts }: Props) {
-  const [editando, setEditando] = useState(false)
-
   const gerarParecer = () => {
-    const riscosCriticos = data.riscos.filter((r: any) => r.nivel === NIVEIS_RISCO.CRITICO)
-    const riscosAltos = data.riscos.filter((r: any) => r.nivel === NIVEIS_RISCO.ALTO)
-    const riscosModerados = data.riscos.filter((r: any) => r.nivel === NIVEIS_RISCO.MODERADO)
-    const riscosBaixos = data.riscos.filter((r: any) => r.nivel === NIVEIS_RISCO.BAIXO)
+    const riscosCriticos = data.riscos.filter((r) => r.nivel === NIVEIS_RISCO.CRITICO)
+    const riscosAltos = data.riscos.filter((r) => r.nivel === NIVEIS_RISCO.ALTO)
+    const riscosModerados = data.riscos.filter((r) => r.nivel === NIVEIS_RISCO.MODERADO)
+    const riscosBaixos = data.riscos.filter((r) => r.nivel === NIVEIS_RISCO.BAIXO)
 
     const texto = `PARECER TÉCNICO DE ${data.tipo}
 
@@ -46,7 +43,7 @@ Foram identificados ${data.riscos?.length || 0} riscos, distribuídos da seguint
 - Moderados: ${riscosModerados.length}
 - Baixos: ${riscosBaixos.length}
 
-${riscosCriticos.length > 0 || riscosAltos.length > 0 ? '5.1 RISCOS CRÍTICOS E ALTOS\n' + [...riscosCriticos, ...riscosAltos].map((r: any) => `- ${r.perigo} (${r.nivel}): ${r.fonteGeradora}`).join('\n') : ''}
+${riscosCriticos.length > 0 || riscosAltos.length > 0 ? '5.1 RISCOS CRÍTICOS E ALTOS\n' + [...riscosCriticos, ...riscosAltos].map((r) => `- ${r.perigo} (${r.nivel}): ${r.fonteGeradora}`).join('\n') : ''}
 
 6. CONTROLES RECOMENDADOS
 Foram propostas ${data.controles?.length || 0} medidas de controle, organizadas por prioridade, com responsáveis e prazos definidos.

@@ -7,6 +7,8 @@
     <img src="https://img.shields.io/badge/license-MIT-0B6B3A?style=flat-square" alt="License" />
     <img src="https://img.shields.io/badge/stack-React%20%7C%20Supabase%20%7C%20Tailwind-0B6B3A?style=flat-square" alt="Stack" />
     <img src="https://img.shields.io/badge/PWA-✓-0B6B3A?style=flat-square" alt="PWA" />
+    <img src="https://img.shields.io/badge/build-passing-0B6B3A?style=flat-square" alt="Build" />
+    <img src="https://img.shields.io/badge/types-TypeScript-3178C6?style=flat-square" alt="TypeScript" />
   </p>
 </div>
 
@@ -34,8 +36,8 @@ O sistema guia o usuário por um fluxo de 8 etapas — desde a identificação d
 - **Relatórios** — Geração de PDF completo ou executivo com `@react-pdf/renderer`
 - **Modo escuro** — Alternância com persistência via classe CSS
 - **Exportação/Importação** — Backup completo dos dados em JSON
-- **PWA** — Instalável em dispositivos móveis e desktop
-- **Offline-first** — Dados armazenados localmente com sincronização via Supabase
+- **PWA** — Instalável em dispositivos móveis e desktop; service worker com precache de assets
+- **Fallback offline** — Autenticação via localStorage quando Supabase indisponível
 
 ## Stack
 
@@ -164,6 +166,8 @@ O arquivo `public/_redirects` já configura o roteamento SPA (`/*` → `/index.h
 | `npm run dev` | Inicia servidor de desenvolvimento |
 | `npm run build` | Compila TypeScript + empacota com Vite |
 | `npm run preview` | Pré-visualiza o build de produção |
+| `npm run lint` | Verifica código com ESLint |
+| `npm run typecheck` | Verifica tipos com TypeScript (`tsc --noEmit`) |
 
 ## Licença
 
