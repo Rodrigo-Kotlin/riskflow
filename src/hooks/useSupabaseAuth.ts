@@ -32,7 +32,8 @@ export function useSupabaseAuth() {
             })
           }
         }
-      } catch {
+      } catch (err) {
+        if (import.meta.env.DEV) console.error('[useSupabaseAuth] getSession error:', err)
         const stored = localStorage.getItem('riskflow_auth')
         if (stored) {
           try { setUser(JSON.parse(stored)) } catch { /* ignore */ }
@@ -58,7 +59,9 @@ export function useSupabaseAuth() {
           }
           setUser(u)
           localStorage.setItem('riskflow_auth', JSON.stringify(u))
-        } catch { /* ignore */ }
+        } catch (err) {
+            if (import.meta.env.DEV) console.error('[useSupabaseAuth] profile on signin error:', err)
+          }
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
         localStorage.removeItem('riskflow_auth')

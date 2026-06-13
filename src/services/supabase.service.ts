@@ -150,7 +150,10 @@ export async function getLevantamento(id: string): Promise<Levantamento | null> 
     .select('*')
     .eq('id', id)
     .single()
-  if (error) return null
+  if (error) {
+    if (import.meta.env.DEV) console.error('[Supabase] getLevantamento error:', error.message)
+    return null
+  }
   return mapLevantamentoFromSupabase(data) as Levantamento
 }
 
@@ -269,7 +272,7 @@ function toSnakeCase(l: Levantamento): Record<string, any> {
     responsavel_empresa: l.responsavelEmpresa,
     auditor_tecnico: l.auditorTecnico,
     registro_mte: l.registroMTE,
-    data_levantamento: l.dataLevantamento,
+    data_levantamento: l.dataLevantamento || null,
     data_lancamento_sgg: l.dataLancamentoSGG,
     responsavel_lancamento: l.responsavelLancamento,
     status: l.status,

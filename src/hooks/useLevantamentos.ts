@@ -29,7 +29,8 @@ export function useLevantamentos() {
     try {
       const created = await createLevantamento(levantamento)
       setLevantamentos(prev => [created, ...prev])
-    } catch {
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('[useLevantamentos] Erro ao criar:', err)
       setLevantamentos(prev => [...prev, levantamento])
     }
   }, [])
@@ -38,7 +39,8 @@ export function useLevantamentos() {
     try {
       const updated = await updateLevantamento(levantamento)
       setLevantamentos(prev => prev.map(l => l.id === updated.id ? updated : l))
-    } catch {
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('[useLevantamentos] Erro ao atualizar:', err)
       setLevantamentos(prev => prev.map(l => l.id === levantamento.id ? levantamento : l))
     }
   }, [])
