@@ -43,12 +43,18 @@ export function useLevantamentos() {
     }
   }, [])
 
-  const remove = useCallback(async (id: string) => {
+  const remove = useCallback(async (id: string): Promise<void> => {
     try {
       await deleteLevantamento(id)
       setLevantamentos(prev => prev.filter(l => l.id !== id))
-    } catch {
-      setLevantamentos(prev => prev.filter(l => l.id !== id))
+    } catch (err) {
+      const logData: Record<string, unknown> = { operation: 'delete', entity: 'levantamento', id }
+      if (err instanceof Object) {
+        const e = err as Record<string, unknown>
+        logData.code = e?.code; logData.message = e?.message; logData.details = e?.details; logData.hint = e?.hint
+      }
+      console.error('[useLevantamentos] Erro ao excluir levantamento:', logData)
+      throw err
     }
   }, [])
 

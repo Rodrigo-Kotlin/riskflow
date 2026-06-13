@@ -51,11 +51,28 @@ export function Levantamentos() {
     toasts.addToast('success', 'Duplicado', 'Levantamento duplicado com sucesso.')
   }
 
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const confirmDelete = async () => {
-    if (deleteId) {
+    if (!deleteId || isDeleting) return
+    setIsDeleting(true)
+    try {
       await remove(deleteId)
-      toasts.addToast('success', 'Excluído', 'Levantamento removido.')
+      toasts.addToast('success', 'Excluído', 'Levantamento removido com sucesso.')
+    } catch (err) {
+      const e = err as Record<string, unknown>
+      const code = e?.code as string | undefined
+      const msg = ((e?.message as string) ?? '').toLowerCase()
+      if (code === '42501' || msg.includes('permission denied') || msg.includes('not authorized')) {
+        toasts.addToast('error', 'Erro ao excluir', 'Você não tem permissão para excluir este levantamento.')
+      } else if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network error')) {
+        toasts.addToast('error', 'Erro ao excluir', 'Não foi possível excluir agora. Verifique a conexão e tente novamente.')
+      } else {
+        toasts.addToast('error', 'Erro ao excluir', 'Ocorreu um erro ao excluir o levantamento.')
+      }
+    } finally {
       setDeleteId(null)
+      setIsDeleting(false)
     }
   }
 
@@ -151,7 +168,7 @@ export function Levantamentos() {
                         <button onClick={() => navigate(`/levantamentos/${l.id}`)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" title="Abrir" aria-label="Ver levantamento"><Eye size={14} /></button>
                         <button onClick={() => navigate(`/levantamentos/${l.id}`)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" title="Editar" aria-label="Editar levantamento"><Edit3 size={14} /></button>
                         <button onClick={() => duplicate(l)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" title="Duplicar" aria-label="Duplicar levantamento"><Copy size={14} /></button>
-                        <button onClick={() => setDeleteId(l.id)} className="p-1.5 text-text-secondary hover:text-risk-high rounded hover:bg-red-50" title="Excluir" aria-label="Excluir levantamento"><Trash2 size={14} /></button>
+                        <button onClick={() => setDeleteId(l.id)} disabled={isDeleting} className={`p-1.5 rounded hover:bg-red-50 ${isDeleting ? 'text-gray-300 cursor-not-allowed' : 'text-text-secondary hover:text-risk-high'}`} title="Excluir" aria-label="Excluir levantamento"><Trash2 size={14} /></button>
                         {l.status === STATUS_LEVANTAMENTO.CONCLUIDO && <button className="p-1.5 text-text-secondary hover:text-brand-500 rounded hover:bg-green-50" title="Exportar" aria-label="Exportar levantamento"><FileDown size={14} /></button>}
                       </div>
                     </td>
@@ -186,7 +203,7 @@ export function Levantamentos() {
                   <div className="flex gap-1">
                     <button onClick={() => navigate(`/levantamentos/${l.id}`)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" aria-label="Ver levantamento"><Eye size={14} /></button>
                     <button onClick={() => duplicate(l)} className="p-1.5 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" aria-label="Duplicar levantamento"><Copy size={14} /></button>
-                    <button onClick={() => setDeleteId(l.id)} className="p-1.5 text-text-secondary hover:text-risk-high rounded hover:bg-red-50" aria-label="Excluir levantamento"><Trash2 size={14} /></button>
+                    <button onClick={() => setDeleteId(l.id)} disabled={isDeleting} className={`p-1.5 rounded hover:bg-red-50 ${isDeleting ? 'text-gray-300 cursor-not-allowed' : 'text-text-secondary hover:text-risk-high'}`} aria-label="Excluir levantamento"><Trash2 size={14} /></button>
                   </div>
                 </div>
               </div>

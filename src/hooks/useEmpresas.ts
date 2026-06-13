@@ -48,15 +48,20 @@ export function useEmpresas() {
     }
   }, [empresas])
 
-  const remove = useCallback(async (id: string) => {
+  const remove = useCallback(async (id: string): Promise<void> => {
     try {
       await deleteEmpresa(id)
       setEmpresas(prev => prev.filter(e => e.id !== id))
-    } catch {
-      setEmpresas(prev => prev.filter(e => e.id !== id))
-      localStorage.setItem('riskflow_empresas', JSON.stringify(empresas.filter(e => e.id !== id)))
+    } catch (err) {
+      const logData: Record<string, unknown> = { operation: 'delete', entity: 'empresa', id }
+      if (err instanceof Object) {
+        const e = err as Record<string, unknown>
+        logData.code = e?.code; logData.message = e?.message; logData.details = e?.details; logData.hint = e?.hint
+      }
+      console.error('[useEmpresas] Erro ao excluir empresa:', logData)
+      throw err
     }
-  }, [empresas])
+  }, [])
 
   return { empresas, loading, error, add, update, remove, reload: load }
 }
