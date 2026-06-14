@@ -1,13 +1,12 @@
-import { forwardRef, useImperativeHandle, useCallback, useState } from 'react'
+import { forwardRef, useImperativeHandle, useCallback, useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FormSection, InputField } from '@/components/forms/FormSection'
 import { useEmpresas } from '@/hooks/useEmpresas'
-import { Empresa, Levantamento } from '@/types'
-import { Plus, X } from 'lucide-react'
-
-const SETORES_PREDEFINIDOS = ['Administrativo', 'Comercial', 'Financeiro', 'RH']
+import { Empresa, Levantamento, Setor } from '@/types'
+import { listarSetores, criarSetor } from '@/services/setores.service'
+import { Plus, X, Loader2 } from 'lucide-react'
 
 const stepSchema = z.object({
   tipo: z.enum(['LPR', 'LPP', 'AEP'], { message: 'Selecione o tipo de levantamento' }),
@@ -30,14 +29,22 @@ interface Props {
 }
 
 export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> }, Props>(
-  ({ data, updateData }, ref) => {
+  ({ data, updateData, toasts }, ref) => {
     const { empresas } = useEmpresas()
-    const [setores, setSetores] = useState<string[]>(() => {
-      const saved = localStorage.getItem('riskflow_setores')
-      return saved ? JSON.parse(saved) : SETORES_PREDEFINIDOS
-    })
+    const [setores, setSetores] = useState<Setor[]>([])
+    const [loadingSetores, setLoadingSetores] = useState(true)
+    const [savingSetor, setSavingSetor] = useState(false)
     const [novoSetor, setNovoSetor] = useState('')
     const [showNovoSetor, setShowNovoSetor] = useState(false)
+
+    useEffect(() => {
+      let cancelled = false
+      listarSetores()
+        .then((data) => { if (!cancelled) setSetores(data) })
+        .catch(() => { if (!cancelled) setSetores([]) })
+        .finally(() => { if (!cancelled) setLoadingSetores(false) })
+      return () => { cancelled = true }
+    }, [])
 
     const { register, handleSubmit, formState: { errors }, trigger, setValue, getValues } = useForm<StepForm>({
       resolver: zodResolver(stepSchema),
@@ -71,18 +78,28 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
       updateData(values)
     }, [getValues, updateData])
 
-    const adicionarSetor = () => {
+    const adicionarSetor = async () => {
       const nome = novoSetor.trim()
       if (!nome) return
       const normalizado = nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase()
-      if (setores.some(s => s.toLowerCase() === normalizado.toLowerCase())) return
-      const novos = [...setores, normalizado]
-      setSetores(novos)
-      localStorage.setItem('riskflow_setores', JSON.stringify(novos))
-      setValue('setor', normalizado)
-      updateData({ setor: normalizado })
-      setNovoSetor('')
-      setShowNovoSetor(false)
+      if (setores.some(s => s.nome.toLowerCase() === normalizado.toLowerCase())) {
+        toasts.addToast('warning', 'Setor já existe', 'Este setor já está cadastrado.')
+        return
+      }
+      setSavingSetor(true)
+      try {
+        const criado = await criarSetor(normalizado)
+        setSetores(prev => [...prev, criado])
+        setValue('setor', criado.nome)
+        updateData({ setor: criado.nome })
+        setNovoSetor('')
+        setShowNovoSetor(false)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Não foi possível salvar este item agora. Verifique a conexão e tente novamente.'
+        toasts.addToast('error', 'Erro ao salvar setor', message)
+      } finally {
+        setSavingSetor(false)
+      }
     }
 
     return (
@@ -123,11 +140,12 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
                     syncFormToParent()
                   }
                 }}
-                  className="input-base flex-1">
-                  <option value="">Selecione...</option>
-                  {setores.map(s => <option key={s} value={s}>{s}</option>)}
+                  className="input-base flex-1" disabled={loadingSetores}>
+                  <option value="">{loadingSetores ? 'Carregando...' : 'Selecione...'}</option>
+                  {setores.map(s => <option key={s.id} value={s.nome}>{s.nome}</option>)}
                   <option value="__novo__">+ Adicionar novo setor</option>
                 </select>
+                {loadingSetores && <Loader2 size={18} className="animate-spin text-text-secondary shrink-0 mt-3" />}
               </div>
               {showNovoSetor && (
                 <div className="flex gap-2 mt-2">
@@ -136,12 +154,13 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
                     onChange={(e) => setNovoSetor(e.target.value)}
                     placeholder="Novo setor..."
                     className="input-base flex-1"
+                    disabled={savingSetor}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); adicionarSetor() } }}
                   />
-                  <button type="button" onClick={adicionarSetor} className="btn-primary h-11 w-11 p-0 flex items-center justify-center" aria-label="Adicionar setor">
-                    <Plus size={18} />
+                  <button type="button" onClick={adicionarSetor} disabled={savingSetor} className="btn-primary h-11 w-11 p-0 flex items-center justify-center" aria-label="Adicionar setor">
+                    {savingSetor ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
                   </button>
-                  <button type="button" onClick={() => { setShowNovoSetor(false); setNovoSetor('') }} className="btn-secondary h-11 w-11 p-0 flex items-center justify-center" aria-label="Cancelar">
+                  <button type="button" onClick={() => { setShowNovoSetor(false); setNovoSetor('') }} disabled={savingSetor} className="btn-secondary h-11 w-11 p-0 flex items-center justify-center" aria-label="Cancelar">
                     <X size={18} />
                   </button>
                 </div>

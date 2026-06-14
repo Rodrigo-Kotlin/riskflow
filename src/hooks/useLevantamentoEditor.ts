@@ -5,35 +5,15 @@ import { useApp } from '@/components/layout/AppShell'
 import { generateId, today } from '@/lib/utils'
 import { STATUS_LEVANTAMENTO } from '@/constants'
 import { createLevantamento, updateLevantamento, getLevantamento } from '@/services/supabase.service'
+import { gerarCodigoDocumento } from '@/services/codigo.service'
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
-
-function gerarCodigo(tipo: string): string {
-  const ano = new Date().getFullYear() % 100
-  const anoStr = String(ano).padStart(2, '0')
-  const stored = localStorage.getItem('riskflow_levantamentos')
-  let maxSeq = 0
-  if (stored) {
-    try {
-      const list: Levantamento[] = JSON.parse(stored)
-      for (const l of list) {
-        const match = l.codigo?.match(/(\d{4})\/\d{2}$/)
-        if (match) {
-          const seq = parseInt(match[1], 10)
-          if (seq > maxSeq) maxSeq = seq
-        }
-      }
-    } catch { /* ignore */ }
-  }
-  const seq = String(maxSeq + 1).padStart(4, '0')
-  return `${tipo}-${seq}/${anoStr}`
-}
 
 function criarRascunhoVazio(): Levantamento {
   return {
     id: generateId(),
     tipo: 'LPR',
-    codigo: gerarCodigo('LPR'),
+    codigo: '',
     empresaId: '', empresaNome: '', cnpj: '', unidade: '', setor: '',
     responsavelEmpresa: '', auditorTecnico: '', registroMTE: '',
     dataLevantamento: today(), dataLancamentoSGG: '', responsavelLancamento: '',
@@ -108,20 +88,31 @@ export function useLevantamentoEditor() {
 
   const executarSave = useCallback(async (updated: Levantamento) => {
     setSaveStatus('saving')
+    let toSave = { ...updated }
     try {
+      if (!toSave.codigo) {
+        try {
+          const codigo = await gerarCodigoDocumento(toSave.tipo)
+          toSave = { ...toSave, codigo }
+          setLevantamento(prev => ({ ...prev, codigo }))
+        } catch {
+          // RPC indisponivel — salva sem codigo
+        }
+      }
+
       if (id || storedRef.current) {
-        await updateLevantamento(updated)
+        await updateLevantamento(toSave)
       } else {
-        await createLevantamento(updated)
-        storedRef.current = updated
+        await createLevantamento(toSave)
+        storedRef.current = toSave
       }
       setSaveStatus('saved')
     } catch {
       const stored = localStorage.getItem('riskflow_levantamentos')
       const list: Levantamento[] = stored ? JSON.parse(stored) : []
-      const idx = list.findIndex(l => l.id === updated.id)
-      if (idx >= 0) list[idx] = updated
-      else list.push(updated)
+      const idx = list.findIndex(l => l.id === (id || toSave.id))
+      if (idx >= 0) list[idx] = toSave
+      else list.push(toSave)
       localStorage.setItem('riskflow_levantamentos', JSON.stringify(list))
       setSaveStatus('saved')
     }
@@ -149,14 +140,11 @@ export function useLevantamentoEditor() {
     hasInteracted.current = true
     setLevantamento(prev => {
       const updated = { ...prev, ...partial }
-      if (partial.tipo && partial.tipo !== prev.tipo && !id && !prev.empresaId) {
-        updated.codigo = gerarCodigo(partial.tipo)
-      }
       updated.percentual = calcularPercentual(updated)
       return updated
     })
     setSaveStatus('idle')
-  }, [id])
+  }, [])
 
   useEffect(() => {
     if (id) {
@@ -206,21 +194,32 @@ export function useLevantamentoEditor() {
   }, [])
 
   const finalizar = useCallback(async () => {
-    const updated = {
-      ...levantamento,
+    let toSave = { ...levantamento }
+
+    if (!toSave.codigo) {
+      try {
+        const codigo = await gerarCodigoDocumento(toSave.tipo)
+        toSave = { ...toSave, codigo }
+      } catch {
+        // RPC indisponivel — finaliza sem codigo
+      }
+    }
+
+    toSave = {
+      ...toSave,
       status: STATUS_LEVANTAMENTO.CONCLUIDO,
       percentual: 100,
       updatedAt: today(),
     }
-    setLevantamento(updated)
+    setLevantamento(toSave)
     try {
-      await updateLevantamento(updated)
+      await updateLevantamento(toSave)
     } catch {
       const stored = localStorage.getItem('riskflow_levantamentos')
       const list: Levantamento[] = stored ? JSON.parse(stored) : []
-      const idx = list.findIndex(l => l.id === updated.id)
-      if (idx >= 0) list[idx] = updated
-      else list.push(updated)
+      const idx = list.findIndex(l => l.id === toSave.id)
+      if (idx >= 0) list[idx] = toSave
+      else list.push(toSave)
       localStorage.setItem('riskflow_levantamentos', JSON.stringify(list))
     }
   }, [levantamento])

@@ -1,41 +1,43 @@
-import { useState } from 'react'
-import { Colaborador, Levantamento } from '@/types'
+import { useState, useEffect } from 'react'
+import { Colaborador, Levantamento, CargoFuncao } from '@/types'
 import { generateId } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import { InputField } from '@/components/forms/FormSection'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Badge } from '@/components/ui/Badge'
-import { Plus, Edit3, Trash2, QrCode, Users } from 'lucide-react'
+import { Plus, Edit3, Trash2, QrCode, Users, Loader2 } from 'lucide-react'
 import { STATUS_COLETA } from '@/constants'
+import { listarCargosFuncoes, criarCargoFuncao } from '@/services/cargos.service'
 
 interface Props {
   data: Levantamento
   updateData: (partial: Partial<Levantamento>) => void
+  toasts: { addToast: (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => void }
 }
-
-const CARGOS_PREDEFINIDOS = [
-  'Analista Administrativo', 'Analista de RH', 'Analista Financeiro',
-  'Assistente Administrativo', 'Auxiliar de Serviços Gerais',
-  'Coordenador', 'Diretor', 'Encarregado', 'Engenheiro',
-  'Gerente', 'Líder de Produção', 'Motorista', 'Operador',
-  'Supervisor', 'Técnico de Segurança', 'Vendedor',
-]
 
 const emptyColab: Colaborador = {
   id: '', nome: '', cargo: '', setor: '', posto: '',
   descricaoAtividades: '', observacoes: '', statusColeta: STATUS_COLETA.PENDENTE, qrCodeLink: ''
 }
 
-export function Step04Colaboradores({ data, updateData }: Props) {
+export function Step04Colaboradores({ data, updateData, toasts }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [qrModalOpen, setQrModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<Colaborador>(emptyColab)
-  const [cargos, setCargos] = useState<string[]>(() => {
-    const saved = localStorage.getItem('riskflow_cargos')
-    return saved ? JSON.parse(saved) : CARGOS_PREDEFINIDOS
-  })
+  const [cargos, setCargos] = useState<CargoFuncao[]>([])
+  const [loadingCargos, setLoadingCargos] = useState(true)
+  const [savingCargo, setSavingCargo] = useState(false)
   const [novoCargo, setNovoCargo] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    listarCargosFuncoes()
+      .then((data) => { if (!cancelled) setCargos(data) })
+      .catch(() => { if (!cancelled) setCargos([]) })
+      .finally(() => { if (!cancelled) setLoadingCargos(false) })
+    return () => { cancelled = true }
+  }, [])
 
   const colaboradores = data.colaboradores || []
 
@@ -65,15 +67,25 @@ export function Step04Colaboradores({ data, updateData }: Props) {
     updateData({ colaboradores: colaboradores.filter((c: Colaborador) => c.id !== id) })
   }
 
-  const adicionarCargo = () => {
+  const adicionarCargo = async () => {
     const nome = novoCargo.trim()
     if (!nome) return
-    if (cargos.some(c => c.toLowerCase() === nome.toLowerCase())) return
-    const atualizado = [...cargos, nome]
-    setCargos(atualizado)
-    localStorage.setItem('riskflow_cargos', JSON.stringify(atualizado))
-    setForm({ ...form, cargo: nome })
-    setNovoCargo('')
+    if (cargos.some(c => c.nome.toLowerCase() === nome.toLowerCase())) {
+      toasts.addToast('warning', 'Cargo já existe', 'Este cargo/função já está cadastrado.')
+      return
+    }
+    setSavingCargo(true)
+    try {
+      const criado = await criarCargoFuncao(nome)
+      setCargos(prev => [...prev, criado])
+      setForm({ ...form, cargo: criado.nome })
+      setNovoCargo('')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Não foi possível salvar este item agora. Verifique a conexão e tente novamente.'
+      toasts.addToast('error', 'Erro ao salvar cargo', message)
+    } finally {
+      setSavingCargo(false)
+    }
   }
 
   const statusVariant: Record<string, 'info' | 'success' | 'warning' | 'default'> = {
@@ -132,16 +144,18 @@ export function Step04Colaboradores({ data, updateData }: Props) {
                 if (v === '__novo__') return
                 setForm({ ...form, cargo: v })
               }}
-                className="input-base">
-                <option value="">Selecione...</option>
-                {cargos.map(c => <option key={c} value={c}>{c}</option>)}
+                className="input-base" disabled={loadingCargos}>
+                <option value="">{loadingCargos ? 'Carregando...' : 'Selecione...'}</option>
+                {cargos.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
                 <option value="__novo__">+ Adicionar novo cargo</option>
               </select>
+              {loadingCargos && <Loader2 size={18} className="animate-spin text-text-secondary" />}
               <div className="flex gap-2">
                 <input value={novoCargo} onChange={(e) => setNovoCargo(e.target.value)} placeholder="Digite novo cargo..." className="input-base flex-1"
+                  disabled={savingCargo}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); adicionarCargo() } }} />
-                <button type="button" onClick={adicionarCargo} className="btn-primary h-11 w-11 p-0 flex items-center justify-center" aria-label="Adicionar cargo">
-                  <Plus size={18} />
+                <button type="button" onClick={adicionarCargo} disabled={savingCargo} className="btn-primary h-11 w-11 p-0 flex items-center justify-center" aria-label="Adicionar cargo">
+                  {savingCargo ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
                 </button>
               </div>
             </div>

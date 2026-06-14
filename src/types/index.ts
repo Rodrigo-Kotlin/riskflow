@@ -178,6 +178,24 @@ export interface Relatorio {
   createdAt: string
 }
 
+export interface Setor {
+  id: string
+  nome: string
+  ativo: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CargoFuncao {
+  id: string
+  nome: string
+  ativo: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Usuario {
   id: string
   nome: string

@@ -75,7 +75,7 @@ export function NovoLevantamento() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold text-text-primary">{id ? 'Editar Levantamento' : 'Novo Levantamento'}</h1>
-          <p className="text-sm text-text-secondary">{levantamento.codigo} — {levantamento.tipo}</p>
+          <p className="text-sm text-text-secondary">{levantamento.codigo ? `${levantamento.codigo} — ` : ''}{levantamento.tipo}</p>
         </div>
         <button onClick={() => navigate('/levantamentos')} className="text-sm text-text-secondary hover:text-text-primary flex items-center gap-1">
           <ArrowLeft size={16} /> Voltar
