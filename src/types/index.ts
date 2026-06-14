@@ -232,7 +232,7 @@ export interface BibliotecaTecnicaItem {
   updated_at: string
 }
 
-export type BibliotecaTecnicaPayload = Omit<BibliotecaTecnicaItem, 'id' | 'created_at' | 'updated_at' | 'is_padrao'>
+export type BibliotecaTecnicaPayload = Omit<BibliotecaTecnicaItem, 'id' | 'created_at' | 'updated_at' | 'is_padrao' | 'created_by'>
 
 export interface BibliotecaTecnicaFiltro {
   categoria?: BibliotecaCategoria

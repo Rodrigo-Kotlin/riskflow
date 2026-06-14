@@ -141,7 +141,6 @@ export function Biblioteca() {
           tags,
           metadados: {},
           ativo: true,
-          created_by: null,
         })
         toasts.addToast('success', 'Criado', 'Novo item adicionado à biblioteca.')
       }
