@@ -15,14 +15,17 @@ export function Step07Parecer({ data, updateData, toasts }: Props) {
     const riscosModerados = data.riscos.filter((r) => r.nivel === NIVEIS_RISCO.MODERADO)
     const riscosBaixos = data.riscos.filter((r) => r.nivel === NIVEIS_RISCO.BAIXO)
 
+    const dims = data.caracteristicas?.comprimento || data.caracteristicas?.largura
+      ? `${data.caracteristicas?.comprimento || '?'}m x ${data.caracteristicas?.largura || '?'}m`
+      : data.caracteristicas?.dimensoes || 'não informado'
+
     const texto = `PARECER TÉCNICO DE ${data.tipo}
 
 Empresa: ${data.empresaNome}
 CNPJ: ${data.cnpj}
-Unidade: ${data.unidade}
 Setor: ${data.setor}
 Data do levantamento: ${data.dataLevantamento}
-Responsável técnico: ${data.auditorTecnico} — Registro: ${data.registroMTE}
+Responsável técnico: ${data.auditorTecnico}
 
 1. OBJETIVO
 Realizar o Levantamento de Perigos e Riscos (LPR) no setor ${data.setor} da empresa ${data.empresaNome}, conforme requisitos legais aplicáveis e normas regulamentadoras.
@@ -31,7 +34,7 @@ Realizar o Levantamento de Perigos e Riscos (LPR) no setor ${data.setor} da empr
 Foram realizadas visitas técnicas, inspeções de segurança, entrevistas com colaboradores, medições ambientais e análise documental. A avaliação dos riscos foi realizada com base na metodologia de Severidade x Probabilidade.
 
 3. CARACTERÍSTICAS DO LOCAL
-O ambiente avaliado possui ${data.caracteristicas?.qtdColaboradores || 0} colaboradores, dimensões de ${data.caracteristicas?.dimensoes || 'não informado'}, pé-direito de ${data.caracteristicas?.peDireito || 'não informado'}, localizado no pavimento ${data.caracteristicas?.pavimento || 'não informado'}.
+O ambiente avaliado possui ${data.caracteristicas?.qtdColaboradores || 0} colaboradores, dimensões de ${dims}, pé-direito de ${data.caracteristicas?.peDireito || 'não informado'}m, localizado no pavimento ${data.caracteristicas?.pavimento || 'não informado'}.
 
 4. MEDIÇÕES AMBIENTAIS
 Foram realizadas ${data.medicoes?.length || 0} medições pontuais no ambiente de trabalho, abrangendo ruído, iluminância, temperatura e umidade.
@@ -56,8 +59,7 @@ Com base na análise técnica realizada, conclui-se que o setor ${data.setor} da
 
 Este parecer foi gerado automaticamente pelo sistema Efetiva RiskFlow e deve ser revisado e validado por profissional legalmente habilitado antes da emissão final.
 
-${data.auditorTecnico || 'Profissional Responsável'}
-Registro: ${data.registroMTE || '_______________'}`
+${data.auditorTecnico || 'Profissional Responsável'}`
 
     updateData({ parecer: { texto, editado: false } })
     toasts.addToast('success', 'Parecer gerado', 'O parecer técnico automático foi gerado com sucesso.')

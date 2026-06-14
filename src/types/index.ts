@@ -97,6 +97,8 @@ export interface CaracteristicasLocal {
   setor: string
   qtdColaboradores: number
   dimensoes: string
+  comprimento: string
+  largura: string
   peDireito: string
   pavimento: string
   paredesVedacao: string
@@ -116,6 +118,11 @@ export interface CaracteristicasLocal {
   epis: string
   epcs: string
   imagens: string[]
+}
+
+export interface ItemComQuantidade {
+  nome: string
+  quantidade: number
 }
 
 export interface ParecerTecnico {

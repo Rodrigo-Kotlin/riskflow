@@ -9,6 +9,31 @@
   body {
     @apply bg-surface text-text-primary;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+  }
+  input, select, textarea, button {
+    font-size: 16px;
+  }
+  label {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+@layer components {
+  .input-base {
+    @apply w-full h-11 px-3 rounded-lg border border-border text-[16px] leading-tight bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500 transition-colors;
+  }
+  .input-error {
+    @apply border-risk-high focus:ring-risk-high/50;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 h-11 px-5 bg-brand-500 hover:bg-brand-600 text-white font-medium rounded-lg transition-colors text-[15px] leading-none;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 h-11 px-5 bg-white border border-border text-text-secondary hover:text-text-primary hover:bg-gray-50 font-medium rounded-lg transition-colors text-[15px] leading-none;
   }
 }
 

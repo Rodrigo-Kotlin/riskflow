@@ -11,8 +11,8 @@ import { Step06Controles } from './steps/Step06Controles'
 import { Step07Parecer } from './steps/Step07Parecer'
 import { Step08Revisao } from './steps/Step08Revisao'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { Save, ArrowLeft, ArrowRight, Check } from 'lucide-react'
-import { useLevantamentoEditor } from '@/hooks/useLevantamentoEditor'
+import { Save, ArrowLeft, ArrowRight, Check, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { useLevantamentoEditor, SaveStatus } from '@/hooks/useLevantamentoEditor'
 
 const steps = [
   { label: 'Identificação', sublabel: 'Dados gerais' },
@@ -22,14 +22,21 @@ const steps = [
   { label: 'Perigos e Riscos', sublabel: 'Inventário' },
   { label: 'Controles', sublabel: 'Plano de ação' },
   { label: 'Parecer', sublabel: 'Técnico' },
-  { label: 'Revisão', sublabel: 'Assinaturas' },
+  { label: 'Revisão', sublabel: 'Final' },
 ]
+
+function SaveStatusIndicator({ status }: { status: SaveStatus }) {
+  if (status === 'saving') return <span className="flex items-center gap-1 text-xs text-text-secondary"><Loader2 size={12} className="animate-spin" /> Salvando...</span>
+  if (status === 'saved') return <span className="flex items-center gap-1 text-xs text-risk-low"><CheckCircle2 size={12} /> Alterações salvas</span>
+  if (status === 'error') return <span className="flex items-center gap-1 text-xs text-risk-high"><AlertTriangle size={12} /> Erro ao salvar</span>
+  return null
+}
 
 export function NovoLevantamento() {
   const navigate = useNavigate()
   const { id } = useParams()
   const { toasts } = useApp()
-  const { levantamento, currentStep, progresso, handleNext, handleBack, updateData, salvarRascunho, finalizar } = useLevantamentoEditor()
+  const { levantamento, currentStep, progresso, saveStatus, handleNext, handleBack, updateData, salvarRascunho, finalizar } = useLevantamentoEditor()
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
   const stepRef = useRef<{ trigger: () => Promise<boolean> }>(null)
 
@@ -82,23 +89,24 @@ export function NovoLevantamento() {
       </div>
 
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
+        <div className="flex items-center gap-3">
           {currentStep > 0 && (
-            <button onClick={handleBack} className="flex items-center gap-1 h-10 px-4 text-sm font-medium text-text-secondary hover:text-text-primary bg-white border border-border rounded-lg hover:bg-gray-50">
+            <button onClick={handleBack} className="btn-secondary">
               <ArrowLeft size={16} /> Anterior
             </button>
           )}
+          <SaveStatusIndicator status={saveStatus} />
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={salvarRascunho} className="flex items-center gap-1 h-10 px-4 text-sm font-medium text-text-secondary hover:text-text-primary bg-white border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={salvarRascunho} className="btn-secondary">
             <Save size={16} /> Salvar Rascunho
           </button>
           {currentStep < steps.length - 1 ? (
-            <button onClick={onNext} className="flex items-center gap-1 h-10 px-5 bg-brand-500 hover:bg-brand-600 text-white font-medium rounded-lg transition-colors">
+            <button onClick={onNext} className="btn-primary">
               Próxima Etapa <ArrowRight size={16} />
             </button>
           ) : (
-            <button onClick={() => setShowFinishConfirm(true)} className="flex items-center gap-1 h-10 px-5 bg-risk-low hover:bg-green-600 text-white font-medium rounded-lg transition-colors">
+            <button onClick={() => setShowFinishConfirm(true)} className="btn-primary bg-risk-low hover:bg-green-600">
               <Check size={16} /> Finalizar Levantamento
             </button>
           )}
