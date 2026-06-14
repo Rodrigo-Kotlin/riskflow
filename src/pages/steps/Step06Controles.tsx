@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Controle, Levantamento } from '@/types'
+import type { BibliotecaTecnicaItem } from '@/types'
 import { generateId } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import { InputField } from '@/components/forms/FormSection'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Badge } from '@/components/ui/Badge'
-import { Plus, Edit3, Trash2, ClipboardList } from 'lucide-react'
+import { buscarItensBiblioteca } from '@/services/biblioteca-tecnica.service'
+import { Plus, Edit3, Trash2, ClipboardList, BookOpen } from 'lucide-react'
 import { TIPOS_CONTROLE, STATUS_CONTROLE, PRIORIDADE_CONTROLE } from '@/constants'
 
 interface Props {
@@ -26,6 +28,24 @@ export function Step06Controles({ data, updateData }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<Controle>(emptyControle())
   const [statusFilter, setStatusFilter] = useState('Todos')
+  const [libraryItems, setLibraryItems] = useState<BibliotecaTecnicaItem[]>([])
+  const [libraryLoading, setLibraryLoading] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      setLibraryLoading(true)
+      try {
+        const items = await buscarItensBiblioteca('medida_controle')
+        if (!cancelled) setLibraryItems(items)
+      } catch {
+        // fallback silencioso
+      } finally {
+        if (!cancelled) setLibraryLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
 
   const controles: Controle[] = data.controles || []
   const riscos = data.riscos || []
@@ -176,6 +196,31 @@ export function Step06Controles({ data, updateData }: Props) {
       )}
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingId ? 'Editar Controle' : 'Novo Controle'}>
+        {!editingId && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <BookOpen size={14} className="text-text-secondary" />
+              <p className="text-xs font-medium text-text-secondary">
+                {libraryLoading ? 'Carregando medidas da biblioteca...' : 'Sugestões da biblioteca técnica:'}
+              </p>
+            </div>
+            {libraryLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin h-5 w-5 border-2 border-brand-500 border-t-transparent rounded-full" />
+              </div>
+            ) : libraryItems.length > 0 ? (
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {libraryItems.map(item => (
+                  <button key={item.id} type="button" onClick={() => setForm({ ...emptyControle(), acao: item.nome, tipo: TIPOS_CONTROLE[0] })}
+                    className="shrink-0 text-left p-2 border border-border rounded-lg hover:border-brand-500 hover:bg-brand-50 text-xs max-w-[200px]">
+                    <span className="font-medium text-text-primary block truncate">{item.nome}</span>
+                    {item.descricao && <span className="text-text-secondary block truncate">{item.descricao}</span>}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <InputField label="Ação Recomendada" required className="md:col-span-2" inputId="controle-acao">
             <textarea id="controle-acao" value={form.acao} onChange={(e) => setForm({ ...form, acao: e.target.value })} rows={2} className="w-full px-3 py-2 rounded-lg border border-border text-sm" />

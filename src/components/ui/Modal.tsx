@@ -23,7 +23,12 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
   const overlayRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
+  const onCloseRef = useRef(onClose)
   const titleId = useId()
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   useEffect(() => {
     if (open) {
@@ -48,7 +53,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose()
+        onCloseRef.current()
         return
       }
       if (e.key !== 'Tab') return
@@ -73,7 +78,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
       window.removeEventListener('keydown', handleKeyDown)
       previousFocusRef.current?.focus()
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 
