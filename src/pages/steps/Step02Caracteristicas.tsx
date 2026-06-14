@@ -13,6 +13,7 @@ const OPCOES_TELHADO = ['Cerâmica', 'Fibrocimento', 'Galvanizado', 'PVC']
 const OPCOES_DIVISORIAS = ['1', '2', '3', '4', '5']
 const OPCOES_PAVIMENTO = ['1', '2', '3', '4']
 const OPCOES_ILUMINACAO_ARTIFICIAL = ['LED', 'Fluorescente', 'Incandescente', 'Halogênio', 'Filamento']
+const OPCOES_VENTILACAO_ARTIFICIAL = ['Central de Ar', 'Ar Condicionado de Janela', 'Ventilador', 'Exaustor', 'Climatizador']
 const OPCOES_SISTEMA_INCENDIO = ['Extintor', 'Detector de Fumaça', 'Sprinkler', 'Sinalização de emergência']
 const OPCOES_MOBILIARIOS = ['Armário Vertical', 'Hack', 'Mesa de Reunião', 'Cadeiras']
 const OPCOES_EQUIPAMENTOS = ['Impressora', 'Computador', 'Notebook', 'Cafeteira']
@@ -42,7 +43,6 @@ const stepSchema = z.object({
   peDireito: z.string().optional(),
   iluminacaoNatural: z.string().optional(),
   ventilacaoNatural: z.string().optional(),
-  ventilacaoArtificial: z.string().optional(),
   possibilidadeGES: z.string().optional(),
   epis: z.string().optional(),
   epcs: z.string().optional(),
@@ -72,7 +72,6 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
         peDireito: c.peDireito || '',
         iluminacaoNatural: c.iluminacaoNatural || '',
         ventilacaoNatural: c.ventilacaoNatural || '',
-        ventilacaoArtificial: c.ventilacaoArtificial || '',
         possibilidadeGES: c.possibilidadeGES || '',
         epis: c.epis || '',
         epcs: c.epcs || '',
@@ -269,8 +268,11 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
             </InputField>
 
             <InputField label="Ventilação Artificial" inputId="caracteristicas-ventilacaoArtificial">
-              <input id="caracteristicas-ventilacaoArtificial" {...register('ventilacaoArtificial')} onBlur={syncCampos}
-                className="input-base" />
+              <select id="caracteristicas-ventilacaoArtificial" value={c.ventilacaoArtificial || ''} onChange={(e) => syncCaracteristicas(updateData, data, { ventilacaoArtificial: e.target.value })}
+                className="input-base">
+                <option value="">Selecione...</option>
+                {OPCOES_VENTILACAO_ARTIFICIAL.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
             </InputField>
           </div>
         </FormSection>
