@@ -171,18 +171,6 @@ export interface Relatorio {
   createdAt: string
 }
 
-export interface EmpresaEfetiva {
-  razaoSocial: string
-  cnpj: string
-  endereco: string
-  cidade: string
-  uf: string
-  telefone: string
-  email: string
-  responsavel: string
-  registroProfissional: string
-}
-
 export interface Usuario {
   id: string
   nome: string

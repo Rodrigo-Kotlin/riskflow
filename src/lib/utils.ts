@@ -18,30 +18,8 @@ export function today(): string {
   return new Date().toISOString().split('T')[0]
 }
 
-export function now(): string {
-  return new Date().toISOString()
-}
-
 export function cn(...classes: (string | boolean | undefined | null)[]): string {
   return classes.filter(Boolean).join(' ')
-}
-
-export function formatCnpj(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 14)
-  return digits
-    .replace(/^(\d{2})(\d)/, '$1.$2')
-    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-    .replace(/\.(\d{3})(\d)/, '.$1/$2')
-    .replace(/(\d{4})(\d)/, '$1-$2')
-}
-
-export function formatCpf(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 11)
-  return digits
-    .replace(/^(\d{3})(\d)/, '$1.$2')
-    .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
-    .replace(/\.(\d{3})(\d)/, '.$1/$2')
-    .replace(/(\d{2})$/, '-$1')
 }
 
 import { NIVEIS_RISCO } from '@/constants'
