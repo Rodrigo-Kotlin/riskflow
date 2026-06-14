@@ -16,6 +16,15 @@ function parseList(value: string): string[] {
   try { const p = JSON.parse(value); return Array.isArray(p) ? p : [] } catch { return [] }
 }
 
+function formatListaBiblioteca(value: string): string {
+  if (!value) return '-'
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed)) return parsed.join(', ')
+  } catch { /* plain text */ }
+  return value
+}
+
 function formatMobiliarios(value: string): string {
   const itens = parseItens(value)
   if (itens.length === 0) return value || '-'
@@ -88,8 +97,8 @@ export function ReportPreview({ levantamento, modelo }: ReportPreviewProps) {
                 {c.sistemaIncendio ? <tr><td className="text-text-secondary py-1 pr-2">Sistema Incêndio:</td><td className="font-medium">{parseList(c.sistemaIncendio).join(', ') || c.sistemaIncendio}</td></tr> : null}
                 {c.mobiliarios ? <tr><td className="text-text-secondary py-1 pr-2">Mobiliários:</td><td className="font-medium">{formatMobiliarios(c.mobiliarios)}</td></tr> : null}
                 {c.maquinasEquipamentos ? <tr><td className="text-text-secondary py-1 pr-2">Equipamentos:</td><td className="font-medium">{formatEquipamentos(c.maquinasEquipamentos)}</td></tr> : null}
-                {c.epis ? <tr><td className="text-text-secondary py-1 pr-2">EPIs:</td><td className="font-medium">{c.epis}</td></tr> : null}
-                {c.epcs ? <tr><td className="text-text-secondary py-1 pr-2">EPCs:</td><td className="font-medium">{c.epcs}</td></tr> : null}
+                {c.epis ? <tr><td className="text-text-secondary py-1 pr-2">EPIs:</td><td className="font-medium">{formatListaBiblioteca(c.epis)}</td></tr> : null}
+                {c.epcs ? <tr><td className="text-text-secondary py-1 pr-2">EPCs:</td><td className="font-medium">{formatListaBiblioteca(c.epcs)}</td></tr> : null}
               </tbody>
             </table>
           </Section>

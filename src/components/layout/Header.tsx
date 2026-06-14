@@ -2,7 +2,7 @@ import { Menu, Bell, User, LogOut, Wifi, WifiOff } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 
 interface HeaderProps {
   onMenuClick: () => void

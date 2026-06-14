@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useCallback } from 'react'
+import { forwardRef, useImperativeHandle, useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -28,7 +28,7 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
   ({ data, updateData }, ref) => {
     const { empresas } = useEmpresas()
 
-    const { register, handleSubmit, formState: { errors }, trigger, setValue, getValues } = useForm<StepForm>({
+    const { register, handleSubmit, formState: { errors }, trigger, setValue, getValues, reset } = useForm<StepForm>({
       resolver: zodResolver(stepSchema),
       defaultValues: {
         tipo: data.tipo,
@@ -39,6 +39,16 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
       },
     })
 
+    useEffect(() => {
+      reset({
+        tipo: data.tipo,
+        empresaId: data.empresaId,
+        cnpj: data.cnpj,
+        responsavelEmpresa: data.responsavelEmpresa,
+        dataLevantamento: data.dataLevantamento,
+      })
+    }, [data, reset])
+
     useImperativeHandle(ref, () => ({ trigger }), [trigger])
 
     const handleEmpresaChange = useCallback(
@@ -48,6 +58,10 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
           setValue('empresaId', empresa.id)
           setValue('cnpj', empresa.cnpj)
           updateData({ empresaId: empresa.id, empresaNome: empresa.razaoSocial, cnpj: empresa.cnpj })
+        } else {
+          setValue('empresaId', '')
+          setValue('cnpj', '')
+          updateData({ empresaId: '', empresaNome: '', cnpj: '' })
         }
       },
       [empresas, setValue, updateData]
@@ -57,6 +71,8 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
       const values = getValues()
       updateData(values)
     }, [getValues, updateData])
+
+    const empresaRegister = register('empresaId')
 
     return (
       <form onSubmit={handleSubmit((v) => updateData(v))}>
@@ -73,7 +89,8 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
             </InputField>
 
             <InputField label="Empresa/Cliente" required error={errors.empresaId?.message} inputId="empresaId">
-              <select id="empresaId" value={data.empresaId} onChange={(e) => handleEmpresaChange(e.target.value)}
+              <select id="empresaId" {...empresaRegister} value={data.empresaId}
+                onChange={(e) => { empresaRegister.onChange(e); handleEmpresaChange(e.target.value) }}
                 className="input-base">
                 <option value="">Selecione...</option>
                 {empresas.map((e: Empresa) => <option key={e.id} value={e.id}>{e.razaoSocial}</option>)}

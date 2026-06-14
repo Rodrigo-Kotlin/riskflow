@@ -22,15 +22,12 @@ export function useSupabaseAuth() {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
           const profile = await getProfile(session.user.id)
-          if (profile) {
-            setUser({
-              id: session.user.id,
-              nome: profile.nome || session.user.email?.split('@')[0] || '',
-              email: profile.email || session.user.email || '',
-              senha: '',
-              perfil: (profile.perfil as Usuario['perfil']) || 'visualizador',
-            })
-          }
+          setUser({
+            id: session.user.id,
+            nome: profile?.nome || (session.user.user_metadata?.nome as string) || session.user.email?.split('@')[0] || '',
+            email: profile?.email || session.user.email || '',
+            perfil: (profile?.perfil as Usuario['perfil']) || (session.user.user_metadata?.perfil as Usuario['perfil']) || 'visualizador',
+          })
         }
       } catch (err) {
         if (import.meta.env.DEV) console.error('[useSupabaseAuth] getSession error:', err)
@@ -52,10 +49,9 @@ export function useSupabaseAuth() {
           const profile = await getProfile(session.user.id)
           const u: Usuario = {
             id: session.user.id,
-            nome: profile.nome || session.user.email?.split('@')[0] || '',
-            email: profile.email || session.user.email || '',
-            senha: '',
-            perfil: (profile.perfil as Usuario['perfil']) || 'visualizador',
+            nome: profile?.nome || (session.user.user_metadata?.nome as string) || session.user.email?.split('@')[0] || '',
+            email: profile?.email || session.user.email || '',
+            perfil: (profile?.perfil as Usuario['perfil']) || (session.user.user_metadata?.perfil as Usuario['perfil']) || 'visualizador',
           }
           setUser(u)
           localStorage.setItem('riskflow_auth', JSON.stringify(u))

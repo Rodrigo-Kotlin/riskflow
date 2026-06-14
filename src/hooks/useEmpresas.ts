@@ -58,7 +58,7 @@ export function useEmpresas() {
         const e = err as Record<string, unknown>
         logData.code = e?.code; logData.message = e?.message; logData.details = e?.details; logData.hint = e?.hint
       }
-      console.error('[useEmpresas] Erro ao excluir empresa:', logData)
+      if (import.meta.env.DEV) console.error('[useEmpresas] Erro ao excluir empresa:', logData)
       throw err
     }
   }, [])

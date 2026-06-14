@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 import { Stepper } from '@/components/forms/Stepper'
 import { Step01Identificacao } from './steps/Step01Identificacao'
 import { Step02Caracteristicas } from './steps/Step02Caracteristicas'
@@ -28,6 +28,7 @@ const steps = [
 function SaveStatusIndicator({ status }: { status: SaveStatus }) {
   if (status === 'saving') return <span className="flex items-center gap-1 text-xs text-text-secondary"><Loader2 size={12} className="animate-spin" /> Salvando...</span>
   if (status === 'saved') return <span className="flex items-center gap-1 text-xs text-risk-low"><CheckCircle2 size={12} /> Alterações salvas</span>
+  if (status === 'saved-local') return <span className="flex items-center gap-1 text-xs text-risk-moderate"><AlertTriangle size={12} /> Salvo apenas neste dispositivo</span>
   if (status === 'error') return <span className="flex items-center gap-1 text-xs text-risk-high"><AlertTriangle size={12} /> Erro ao salvar</span>
   return null
 }
@@ -38,6 +39,7 @@ export function NovoLevantamento() {
   const { toasts } = useApp()
   const { levantamento, currentStep, progresso, saveStatus, handleNext, handleBack, updateData, salvarRascunho, finalizar } = useLevantamentoEditor()
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
+  const [isFinalizing, setIsFinalizing] = useState(false)
   const stepRef = useRef<{ trigger: () => Promise<boolean> }>(null)
 
   const onNext = async () => {
@@ -48,11 +50,43 @@ export function NovoLevantamento() {
     handleNext()
   }
 
-  const handleFinish = () => {
-    finalizar()
-    toasts.addToast('success', 'Levantamento concluído!', 'O levantamento foi finalizado com sucesso.')
-    navigate('/levantamentos')
-  }
+  const handleFinish = useCallback(async () => {
+    if (isFinalizing) return
+    if (!levantamento.empresaNome?.trim()) {
+      toasts.addToast('error', 'Dados insuficientes', 'Identificação da empresa é obrigatória.')
+      return
+    }
+    if (!levantamento.caracteristicas?.qtdColaboradores) {
+      toasts.addToast('error', 'Dados insuficientes', 'Informe ao menos 1 colaborador nas Características do Local.')
+      return
+    }
+    if (levantamento.riscos.length === 0) {
+      toasts.addToast('error', 'Dados insuficientes', 'Cadastre ao menos um risco no inventário.')
+      return
+    }
+    if (levantamento.controles.length === 0) {
+      toasts.addToast('error', 'Dados insuficientes', 'Cadastre ao menos um controle ou plano de ação.')
+      return
+    }
+    setIsFinalizing(true)
+    try {
+      const result = await finalizar()
+      if (result.saved) {
+        if (result.local) {
+          toasts.addToast('warning', 'Finalizado localmente', 'O levantamento foi salvo apenas neste dispositivo. Sincronize quando possível.')
+        } else {
+          toasts.addToast('success', 'Levantamento finalizado!', 'O levantamento foi finalizado com sucesso.')
+        }
+        navigate('/levantamentos')
+      } else {
+        toasts.addToast('error', 'Erro ao finalizar', 'Não foi possível finalizar o levantamento. Tente novamente.')
+      }
+    } catch {
+      toasts.addToast('error', 'Erro ao finalizar', 'Ocorreu um erro inesperado ao finalizar o levantamento.')
+    } finally {
+      setIsFinalizing(false)
+    }
+  }, [isFinalizing, finalizar, toasts, navigate, levantamento])
 
   const stepProps = { data: levantamento, updateData, saveRascunho: salvarRascunho, toasts }
 
@@ -65,7 +99,7 @@ export function NovoLevantamento() {
       case 4: return <Step05PerigosRiscos {...stepProps} />
       case 5: return <Step06Controles {...stepProps} />
       case 6: return <Step07Parecer {...stepProps} />
-      case 7: return <Step08Revisao {...stepProps} onFinish={handleFinish} />
+      case 7: return <Step08Revisao {...stepProps} />
       default: return null
     }
   }
@@ -103,8 +137,8 @@ export function NovoLevantamento() {
               Próxima Etapa <ArrowRight size={16} />
             </button>
           ) : (
-            <button onClick={() => setShowFinishConfirm(true)} className="btn-primary bg-risk-low hover:bg-green-600">
-              <Check size={16} /> Finalizar Levantamento
+            <button onClick={() => setShowFinishConfirm(true)} disabled={isFinalizing} className="btn-primary bg-risk-low hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed">
+              {isFinalizing ? <><Loader2 size={16} className="animate-spin" /> Finalizando...</> : <><Check size={16} /> Finalizar Levantamento</>}
             </button>
           )}
         </div>

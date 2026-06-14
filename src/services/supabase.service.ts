@@ -56,9 +56,9 @@ export async function getProfile(userId: string) {
     .from('profiles')
     .select('id, nome, email, perfil')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
   if (error) throw error
-  return data as { id: string; nome: string; email: string | null; perfil: string }
+  return data as { id: string; nome: string; email: string | null; perfil: string } | null
 }
 
 // ─── Empresas ───────────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ export async function createEmpresa(empresa: Empresa) {
   const { data: userData } = await client.auth.getUser()
   const { data, error } = await client
     .from('empresas')
-    .insert({
+    .insert(sanitizePayload({
       id: empresa.id,
       razao_social: empresa.razaoSocial,
       nome_fantasia: empresa.nomeFantasia,
@@ -93,7 +93,7 @@ export async function createEmpresa(empresa: Empresa) {
       email: empresa.email,
       observacoes: empresa.observacoes,
       user_id: userData?.user?.id,
-    })
+    }))
     .select()
     .single()
   if (error) throw error
@@ -104,7 +104,7 @@ export async function updateEmpresa(empresa: Empresa) {
   const client = getClient()
   const { data, error } = await client
     .from('empresas')
-    .update({
+    .update(sanitizePayload({
       razao_social: empresa.razaoSocial,
       nome_fantasia: empresa.nomeFantasia,
       cnpj: empresa.cnpj,
@@ -117,7 +117,7 @@ export async function updateEmpresa(empresa: Empresa) {
       telefone: empresa.telefone,
       email: empresa.email,
       observacoes: empresa.observacoes,
-    })
+    }))
     .eq('id', empresa.id)
     .select()
     .single()
@@ -190,6 +190,14 @@ export async function deleteLevantamento(id: string) {
 }
 
 // ─── Error handler ──────────────────────────────────────────────────────────
+
+function sanitizePayload<T extends Record<string, unknown>>(obj: T): T {
+  const out: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(obj)) {
+    out[k] = v === '' ? null : v
+  }
+  return out as T
+}
 
 function tratarErroAuth(error: unknown): string {
   const err = error as Record<string, unknown>
@@ -268,7 +276,7 @@ function mapLevantamentoFromSupabase(data: SupabaseLevantamento): Levantamento {
 }
 
 function toSnakeCase(l: Levantamento): Record<string, unknown> {
-  return {
+  return sanitizePayload({
     id: l.id,
     tipo: l.tipo,
     codigo: l.codigo,
@@ -291,5 +299,5 @@ function toSnakeCase(l: Levantamento): Record<string, unknown> {
     parecer: l.parecer,
     assinatura_tecnico: l.assinaturaTecnico,
     assinatura_empresa: l.assinaturaEmpresa,
-  }
+  })
 }

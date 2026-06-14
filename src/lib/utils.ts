@@ -1,16 +1,29 @@
-export function formatDate(date: string): string {
+function pad(n: number): string { return String(n).padStart(2, '0') }
+
+export function formatDate(date: string | null | undefined): string {
   if (!date) return ''
-  const d = new Date(date)
-  return d.toLocaleDateString('pt-BR')
+  // YYYY-MM-DD (date-only) → manual format to avoid timezone shift
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const [y, m, d] = date.split('-').map(Number)
+    return `${pad(d)}/${pad(m)}/${y}`
+  }
+  return new Date(date).toLocaleDateString('pt-BR')
 }
 
-export function formatDateTime(date: string): string {
+export function formatDateTime(date: string | null | undefined): string {
   if (!date) return ''
-  const d = new Date(date)
-  return d.toLocaleString('pt-BR')
+  // YYYY-MM-DD (date-only) → manual format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const [y, m, d] = date.split('-').map(Number)
+    return `${pad(d)}/${pad(m)}/${y}`
+  }
+  return new Date(date).toLocaleString('pt-BR')
 }
 
 export function generateId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }
 

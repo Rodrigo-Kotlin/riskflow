@@ -77,6 +77,7 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
   const [detailRisco, setDetailRisco] = useState<Risco | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<Risco>(emptyRisco())
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [filterCat, setFilterCat] = useState<string>('Todas')
   const [filterNivel, setFilterNivel] = useState<string>('Todos')
   const [searchPerigo, setSearchPerigo] = useState('')
@@ -134,7 +135,10 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
   }
 
   const save = () => {
-    if (!form.perigo) return
+    const errors: Record<string, string> = {}
+    if (!form.perigo.trim()) errors.perigo = 'O campo Perigo/Agente é obrigatório.'
+    setFormErrors(errors)
+    if (Object.keys(errors).length > 0) return
     const { pontuacao, nivel } = calcularNivelRisco(form.severidade, form.probabilidade)
     const updated = { ...form, pontuacao, nivel }
     if (editingId) {
@@ -142,6 +146,7 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
     } else {
       updateData({ riscos: [...riscos, updated] })
     }
+    setFormErrors({})
     setModalOpen(false)
   }
 
@@ -165,8 +170,8 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
           <h3 className="text-sm font-semibold text-text-primary">Inventário de Riscos ({riscos.length})</h3>
           <p className="text-xs text-text-secondary">Cadastre os perigos e riscos identificados no local</p>
         </div>
-        <button onClick={openNew} className="flex items-center gap-1 h-9 px-4 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
-          <Plus size={16} /> Adicionar Risco
+        <button onClick={openNew} className="flex items-center gap-1 h-10 px-5 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
+          <Plus size={18} /> Adicionar Risco
         </button>
       </div>
 
@@ -224,8 +229,8 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                 {filteredLibraryItems.length === 0 ? (
                   <p className="text-xs text-text-secondary col-span-2 py-2">Nenhum item da biblioteca para esta categoria.</p>
-                ) : filteredLibraryItems.map((r, i) => (
-                  <button key={i} onClick={() => loadFromLibrary(r)} className="text-left p-2 border border-border rounded-lg hover:border-brand-500 hover:bg-brand-50 text-xs">
+                ) : filteredLibraryItems.map((r) => (
+                  <button key={r.perigo} onClick={() => loadFromLibrary(r)} className="text-left p-2 border border-border rounded-lg hover:border-brand-500 hover:bg-brand-50 text-xs">
                     <span className="font-medium text-text-primary">{r.perigo}</span>
                     <span className="font-medium text-text-secondary ml-2">{r.categoria}</span>
                     {r.dano && <span className="text-text-secondary block">{r.dano}</span>}
@@ -241,8 +246,8 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
               {categorias.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </InputField>
-          <InputField label="Perigo/Agente" required inputId="risco-perigo">
-            <input id="risco-perigo" value={form.perigo} onChange={(e) => setForm({ ...form, perigo: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" />
+          <InputField label="Perigo/Agente" required inputId="risco-perigo" error={formErrors.perigo}>
+            <input id="risco-perigo" value={form.perigo} onChange={(e) => { setForm({ ...form, perigo: e.target.value }); if (formErrors.perigo) setFormErrors({}) }} className={`w-full h-9 px-3 rounded-lg border text-sm ${formErrors.perigo ? 'border-risk-high focus:ring-risk-high/50' : 'border-border'}`} />
           </InputField>
           <InputField label="Dano ou Potencial Efeito" className="md:col-span-2" inputId="risco-dano">
             <textarea id="risco-dano" value={form.dano} onChange={(e) => setForm({ ...form, dano: e.target.value })} rows={2} className="w-full px-3 py-2 rounded-lg border border-border text-sm" />
@@ -300,8 +305,8 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
           </InputField>
         </div>
         <div className="flex justify-end gap-3 mt-4 pt-3 border-t border-border">
-          <button onClick={() => setModalOpen(false)} className="px-3 h-9 text-sm text-text-secondary bg-gray-100 rounded-lg">Cancelar</button>
-          <button onClick={save} className="px-3 h-9 bg-brand-500 text-white text-sm font-medium rounded-lg">Salvar Risco</button>
+          <button onClick={() => setModalOpen(false)} className="px-4 h-10 text-sm text-text-secondary bg-gray-100 rounded-lg">Cancelar</button>
+          <button onClick={save} className="px-4 h-10 bg-brand-500 text-white text-sm font-medium rounded-lg">Salvar Risco</button>
         </div>
       </Modal>
 

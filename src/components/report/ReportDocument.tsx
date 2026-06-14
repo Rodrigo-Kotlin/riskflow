@@ -113,6 +113,15 @@ interface ReportDocumentProps {
   levantamento: Levantamento
 }
 
+function formatValor(value: string): string {
+  if (!value) return '-'
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed)) return parsed.join(', ')
+  } catch { /* plain text */ }
+  return value
+}
+
 export default function ReportDocument({ levantamento }: ReportDocumentProps) {
   const l = levantamento
 
@@ -138,7 +147,7 @@ export default function ReportDocument({ levantamento }: ReportDocumentProps) {
         {Object.entries(l.caracteristicas).filter(([k]) => k !== 'imagens' && k !== 'revestimento').map(([key, value]) => (
           <View key={key} style={styles.row}>
             <Text style={styles.label}>{LABELS_CARACTERISTICAS[key] ?? key}:</Text>
-            <Text style={styles.value}>{String(value) || '-'}</Text>
+            <Text style={styles.value}>{formatValor(String(value))}</Text>
           </View>
         ))}
 

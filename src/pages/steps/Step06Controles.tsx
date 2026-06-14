@@ -17,7 +17,7 @@ interface Props {
 
 function emptyControle(): Controle {
   return {
-    id: '', riscoId: '', acao: '', origem: '', tipo: TIPOS_CONTROLE[0],
+    id: generateId(), riscoId: '', acao: '', origem: '', tipo: TIPOS_CONTROLE[0],
     responsavel: '', prazo: '', prioridade: PRIORIDADE_CONTROLE.MEDIA, status: STATUS_CONTROLE.PENDENTE,
     custoEstimado: '', observacoes: ''
   }
@@ -27,6 +27,7 @@ export function Step06Controles({ data, updateData }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<Controle>(emptyControle())
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [statusFilter, setStatusFilter] = useState('Todos')
   const [libraryItems, setLibraryItems] = useState<BibliotecaTecnicaItem[]>([])
   const [libraryLoading, setLibraryLoading] = useState(false)
@@ -79,12 +80,16 @@ export function Step06Controles({ data, updateData }: Props) {
   }
 
   const save = () => {
-    if (!form.acao) return
+    const errors: Record<string, string> = {}
+    if (!form.acao.trim()) errors.acao = 'O campo Ação Recomendada é obrigatório.'
+    setFormErrors(errors)
+    if (Object.keys(errors).length > 0) return
     if (editingId) {
       updateData({ controles: controles.map((c: Controle) => c.id === editingId ? form : c) })
     } else {
       updateData({ controles: [...controles, form] })
     }
+    setFormErrors({})
     setModalOpen(false)
   }
 
@@ -114,11 +119,11 @@ export function Step06Controles({ data, updateData }: Props) {
           <p className="text-xs text-text-secondary">Consolidado dos controles recomendados</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={gerarControles} className="flex items-center gap-1 h-8 px-3 border border-brand-500 text-brand-500 text-xs font-medium rounded-lg hover:bg-brand-50">
-            <ClipboardList size={14} /> Consolidar dos Riscos
+          <button onClick={gerarControles} className="flex items-center gap-1 h-10 px-4 border border-brand-500 text-brand-500 text-sm font-medium rounded-lg hover:bg-brand-50">
+            <ClipboardList size={16} /> Consolidar dos Riscos
           </button>
-          <button onClick={openNew} className="flex items-center gap-1 h-8 px-3 bg-brand-500 text-white text-xs font-medium rounded-lg hover:bg-brand-600">
-            <Plus size={14} /> Adicionar
+          <button onClick={openNew} className="flex items-center gap-1 h-10 px-4 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
+            <Plus size={16} /> Adicionar
           </button>
         </div>
       </div>
@@ -222,8 +227,8 @@ export function Step06Controles({ data, updateData }: Props) {
           </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <InputField label="Ação Recomendada" required className="md:col-span-2" inputId="controle-acao">
-            <textarea id="controle-acao" value={form.acao} onChange={(e) => setForm({ ...form, acao: e.target.value })} rows={2} className="w-full px-3 py-2 rounded-lg border border-border text-sm" />
+          <InputField label="Ação Recomendada" required error={formErrors.acao} className="md:col-span-2" inputId="controle-acao">
+            <textarea id="controle-acao" value={form.acao} onChange={(e) => { setForm({ ...form, acao: e.target.value }); if (formErrors.acao) setFormErrors({}) }} rows={2} className={`w-full px-3 py-2 rounded-lg border text-sm ${formErrors.acao ? 'border-risk-high focus:ring-risk-high/50' : 'border-border'}`} />
           </InputField>
           <InputField label="Origem do Risco" inputId="controle-origem"><input id="controle-origem" value={form.origem} onChange={(e) => setForm({ ...form, origem: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Tipo de Controle" inputId="controle-tipo">
@@ -255,8 +260,8 @@ export function Step06Controles({ data, updateData }: Props) {
           </InputField>
         </div>
         <div className="flex justify-end gap-3 mt-4 pt-3 border-t border-border">
-          <button onClick={() => setModalOpen(false)} className="px-3 h-8 text-sm text-text-secondary bg-gray-100 rounded-lg">Cancelar</button>
-          <button onClick={save} className="px-3 h-8 bg-brand-500 text-white text-sm font-medium rounded-lg">Salvar</button>
+          <button onClick={() => setModalOpen(false)} className="px-4 h-10 text-sm text-text-secondary bg-gray-100 rounded-lg">Cancelar</button>
+          <button onClick={save} className="px-4 h-10 bg-brand-500 text-white text-sm font-medium rounded-lg">Salvar</button>
         </div>
       </Modal>
     </div>

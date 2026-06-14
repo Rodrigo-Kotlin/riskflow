@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { BookOpen, Search, Plus, Pencil, X, AlertCircle, Hash, Tag } from 'lucide-react'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
@@ -54,9 +54,12 @@ export function Biblioteca() {
   const [editingItem, setEditingItem] = useState<BibliotecaTecnicaItem | null>(null)
   const [form, setForm] = useState<ItemForm>(emptyForm)
   const [saving, setSaving] = useState(false)
+  const formInitialRef = useRef<ItemForm>(emptyForm)
+  const isFormDirty = () => JSON.stringify(form) !== JSON.stringify(formInitialRef.current)
   const [confirmDelete, setConfirmDelete] = useState<BibliotecaTecnicaItem | null>(null)
-  const [confirmReative, setConfirmReative] = useState<BibliotecaTecnicaItem | null>(null)
+  const [confirmReactivate, setConfirmReactivate] = useState<BibliotecaTecnicaItem | null>(null)
   const [fetchKey, setFetchKey] = useState(0)
+  const [contagemCategorias, setContagemCategorias] = useState<Record<string, number>>({})
 
   const fetchItems = () => setFetchKey(k => k + 1)
 
@@ -64,10 +67,18 @@ export function Biblioteca() {
     let cancelled = false
     ;(async () => {
       try {
-        const data = search
-          ? await buscarItensBiblioteca(categoria, search)
-          : (await listarItensPorCategoria())[categoria] || []
-        if (!cancelled) setItems(data)
+        if (search) {
+          const data = await buscarItensBiblioteca(categoria, search)
+          if (!cancelled) setItems(data)
+        } else {
+          const grouped = await listarItensPorCategoria()
+          if (!cancelled) {
+            setItems(grouped[categoria] || [])
+            setContagemCategorias(Object.fromEntries(
+              CATEGORIAS_BIBLIOTECA.map(c => [c.value, (grouped[c.value] || []).length])
+            ))
+          }
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Erro ao carregar biblioteca')
       } finally {
@@ -80,12 +91,13 @@ export function Biblioteca() {
   const handleOpenNew = () => {
     setEditingItem(null)
     setForm(emptyForm)
+    formInitialRef.current = emptyForm
     setModalOpen(true)
   }
 
   const handleOpenEdit = (item: BibliotecaTecnicaItem) => {
     setEditingItem(item)
-    setForm({
+    const initial: ItemForm = {
       nome: item.nome,
       descricao: item.descricao || '',
       tipo: item.tipo || '',
@@ -96,7 +108,9 @@ export function Biblioteca() {
       aplicacao: item.aplicacao || '',
       observacoes: item.observacoes || '',
       tags: (item.tags || []).join(', '),
-    })
+    }
+    setForm(initial)
+    formInitialRef.current = initial
     setModalOpen(true)
   }
 
@@ -165,12 +179,12 @@ export function Biblioteca() {
     }
   }
 
-  const handleReative = async () => {
-    if (!confirmReative) return
+  const handleReactivate = async () => {
+    if (!confirmReactivate) return
     try {
-      await reativarItemBiblioteca(confirmReative.id)
+      await reativarItemBiblioteca(confirmReactivate.id)
       toasts.addToast('success', 'Reativado', 'Item reativado com sucesso.')
-      setConfirmReative(null)
+      setConfirmReactivate(null)
       fetchItems()
     } catch (err) {
       toasts.addToast('error', 'Erro', err instanceof Error ? err.message : 'Erro ao reativar')
@@ -196,8 +210,13 @@ export function Biblioteca() {
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
         {CATEGORIAS_BIBLIOTECA.map(cat => (
           <button key={cat.value} onClick={() => setCategoria(cat.value)}
-            className={`shrink-0 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${categoria === cat.value ? 'bg-brand-500 text-white' : 'bg-white border border-border text-text-secondary hover:bg-gray-50'}`}>
+            className={`shrink-0 flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${categoria === cat.value ? 'bg-brand-500 text-white' : 'bg-white border border-border text-text-secondary hover:bg-gray-50'}`}>
             {cat.label}
+            {!initialLoading && contagemCategorias[cat.value] !== undefined && (
+              <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${categoria === cat.value ? 'bg-white/20 text-white' : 'bg-gray-100 text-text-secondary'}`}>
+                {contagemCategorias[cat.value]}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -259,11 +278,15 @@ export function Biblioteca() {
                 </div>
               )}
               <div className="mt-auto pt-3 flex gap-2 justify-end border-t border-border">
-                <button onClick={() => handleOpenEdit(item)} className="p-1.5 text-text-secondary hover:text-brand-500 rounded hover:bg-brand-50" title="Editar" aria-label="Editar item">
-                  <Pencil size={14} />
-                </button>
                 {item.is_padrao ? (
-                  <span className="p-1.5 text-text-disabled" title="Itens padrão não podem ser desativados"><X size={14} /></span>
+                  <span className="p-1.5 text-text-disabled cursor-not-allowed" title="Itens padrão não podem ser editados"><Pencil size={14} /></span>
+                ) : (
+                  <button onClick={() => handleOpenEdit(item)} className="p-1.5 text-text-secondary hover:text-brand-500 rounded hover:bg-brand-50" title="Editar" aria-label="Editar item">
+                    <Pencil size={14} />
+                  </button>
+                )}
+                {item.is_padrao ? (
+                  <span className="p-1.5 text-text-disabled cursor-not-allowed" title="Itens padrão não podem ser desativados"><X size={14} /></span>
                 ) : (
                   <button onClick={() => setConfirmDelete(item)} className="p-1.5 text-text-secondary hover:text-risk-high rounded hover:bg-red-50" title="Desativar" aria-label="Desativar item">
                     <X size={14} />
@@ -275,7 +298,10 @@ export function Biblioteca() {
         </div>
       )}
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingItem ? 'Editar Item' : 'Novo Item'} size="lg">
+      <Modal open={modalOpen} onClose={() => {
+        if (isFormDirty() && !window.confirm('Há alterações não salvas. Descartar?')) return
+        setModalOpen(false)
+      }} title={editingItem ? 'Editar Item' : 'Novo Item'} size="lg">
         <div className="space-y-4">
           <InputField label="Nome" required>
             <input id="bt-nome" value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} className="w-full h-10 px-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" placeholder="Ex: Ruído contínuo" />
@@ -332,11 +358,11 @@ export function Biblioteca() {
       />
 
       <ConfirmDialog
-        open={!!confirmReative}
-        onClose={() => setConfirmReative(null)}
-        onConfirm={handleReative}
+        open={!!confirmReactivate}
+        onClose={() => setConfirmReactivate(null)}
+        onConfirm={handleReactivate}
         title="Reativar item?"
-        message={`O item "${confirmReative?.nome}" será reativado.`}
+        message={`O item "${confirmReactivate?.nome}" será reativado.`}
         confirmText="Reativar"
         variant="warning"
       />
