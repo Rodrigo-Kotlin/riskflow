@@ -1,11 +1,10 @@
-import { forwardRef, useImperativeHandle, useEffect, useCallback } from 'react'
+import { forwardRef, useImperativeHandle, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FormSection, InputField } from '@/components/forms/FormSection'
-import { useLocalStorage } from '@/hooks/useLocalStorage'
+import { useEmpresas } from '@/hooks/useEmpresas'
 import { Empresa, Levantamento } from '@/types'
-import { empresasMock } from '@/data/mock'
 
 const stepSchema = z.object({
   tipo: z.enum(['LPR', 'LPP', 'AEP'], { message: 'Selecione o tipo de levantamento' }),
@@ -33,9 +32,9 @@ interface Props {
 
 export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> }, Props>(
   ({ data, updateData }, ref) => {
-    const [empresas] = useLocalStorage<Empresa[]>('riskflow_empresas', empresasMock)
+    const { empresas } = useEmpresas()
 
-    const { register, handleSubmit, formState: { errors }, trigger, setValue, watch } = useForm<StepForm>({
+    const { register, handleSubmit, formState: { errors }, trigger, setValue, getValues } = useForm<StepForm>({
       resolver: zodResolver(stepSchema),
       defaultValues: {
         tipo: data.tipo,
@@ -54,13 +53,6 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
 
     useImperativeHandle(ref, () => ({ trigger }), [trigger])
 
-    useEffect(() => {
-      const sub = watch((values) => {
-        updateData(values)
-      })
-      return () => sub.unsubscribe()
-    }, [watch, updateData])
-
     const handleEmpresaChange = useCallback(
       (empresaId: string) => {
         const empresa = empresas.find((e: Empresa) => e.id === empresaId)
@@ -73,12 +65,18 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
       [empresas, setValue, updateData]
     )
 
+    const syncFormToParent = useCallback(() => {
+      const values = getValues()
+      updateData(values)
+    }, [getValues, updateData])
+
     return (
       <form onSubmit={handleSubmit((v) => updateData(v))}>
         <FormSection title="Identificação do Levantamento">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField label="Tipo do Levantamento" required error={errors.tipo?.message} inputId="tipo">
-              <select id="tipo" {...register('tipo')} onChange={(e) => { register('tipo').onChange(e); updateData({ tipo: e.target.value as Levantamento['tipo'] }) }}
+              <select id="tipo" {...register('tipo')}
+                onChange={(e) => { register('tipo').onChange(e); syncFormToParent() }}
                 className="w-full h-10 px-3 rounded-lg border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/70">
                 <option value="LPR">LPR — Levantamento Preliminar de Riscos</option>
                 <option value="LPP">LPP — Levantamento Preliminar de Perigos</option>
@@ -100,42 +98,42 @@ export const Step01Identificacao = forwardRef<{ trigger: () => Promise<boolean> 
             </InputField>
 
             <InputField label="Unidade Operacional" required error={errors.unidade?.message} inputId="unidade">
-              <input id="unidade" {...register('unidade')}
+              <input id="unidade" {...register('unidade')} onBlur={syncFormToParent}
                 className="w-full h-10 px-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
             </InputField>
 
             <InputField label="Setor/Departamento" required error={errors.setor?.message} inputId="setor">
-              <input id="setor" {...register('setor')}
+              <input id="setor" {...register('setor')} onBlur={syncFormToParent}
                 className="w-full h-10 px-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
             </InputField>
 
             <InputField label="Responsável da Empresa" inputId="responsavelEmpresa">
-              <input id="responsavelEmpresa" {...register('responsavelEmpresa')}
+              <input id="responsavelEmpresa" {...register('responsavelEmpresa')} onBlur={syncFormToParent}
                 className="w-full h-10 px-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
             </InputField>
 
             <InputField label="Auditor Técnico Responsável" required error={errors.auditorTecnico?.message} inputId="auditorTecnico">
-              <input id="auditorTecnico" {...register('auditorTecnico')}
+              <input id="auditorTecnico" {...register('auditorTecnico')} onBlur={syncFormToParent}
                 className="w-full h-10 px-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
             </InputField>
 
             <InputField label="Registro Profissional/MTE" inputId="registroMTE">
-              <input id="registroMTE" {...register('registroMTE')}
+              <input id="registroMTE" {...register('registroMTE')} onBlur={syncFormToParent}
                 className="w-full h-10 px-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
             </InputField>
 
             <InputField label="Data do Levantamento" required error={errors.dataLevantamento?.message} inputId="dataLevantamento">
-              <input id="dataLevantamento" type="date" {...register('dataLevantamento')}
+              <input id="dataLevantamento" type="date" {...register('dataLevantamento')} onBlur={syncFormToParent}
                 className="w-full h-10 px-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
             </InputField>
 
             <InputField label="Data de Lançamento no SGG" inputId="dataLancamentoSGG">
-              <input id="dataLancamentoSGG" type="date" {...register('dataLancamentoSGG')}
+              <input id="dataLancamentoSGG" type="date" {...register('dataLancamentoSGG')} onBlur={syncFormToParent}
                 className="w-full h-10 px-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
             </InputField>
 
             <InputField label="Responsável pelo Lançamento" inputId="responsavelLancamento">
-              <input id="responsavelLancamento" {...register('responsavelLancamento')}
+              <input id="responsavelLancamento" {...register('responsavelLancamento')} onBlur={syncFormToParent}
                 className="w-full h-10 px-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70" />
             </InputField>
 

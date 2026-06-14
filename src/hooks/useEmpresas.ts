@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { Empresa } from '@/types'
 import { listEmpresas, createEmpresa, updateEmpresa, deleteEmpresa } from '@/services/supabase.service'
-import { empresasMock } from '@/data/mock'
 
 export function useEmpresas() {
   const [empresas, setEmpresas] = useState<Empresa[]>([])
@@ -17,9 +16,9 @@ export function useEmpresas() {
     } catch {
       const stored = localStorage.getItem('riskflow_empresas')
       if (stored) {
-        try { setEmpresas(JSON.parse(stored)) } catch { setEmpresas(empresasMock) }
+        try { setEmpresas(JSON.parse(stored)) } catch { setEmpresas([]) }
       } else {
-        setEmpresas(empresasMock)
+        setEmpresas([])
       }
     } finally {
       setLoading(false)
