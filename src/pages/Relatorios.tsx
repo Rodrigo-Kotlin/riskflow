@@ -6,9 +6,8 @@ import { formatDate, generateId } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ReportPreview } from '@/components/report/ReportPreview'
+import { PdfDownloadButton } from '@/components/report/PdfDownloadButton'
 import { SkeletonRow } from '@/components/ui/Skeleton'
-import { PDFDownloadLink } from '@react-pdf/renderer'
-import ReportDocument from '@/components/report/ReportDocument'
 import { FileText, Search, Eye, Download, ArrowLeft } from 'lucide-react'
 import { STATUS_LEVANTAMENTO } from '@/constants'
 
@@ -70,9 +69,9 @@ export function Relatorios() {
               <option value="Completo">Modelo Completo</option>
               <option value="Executivo">Modelo Executivo</option>
             </select>
-            <PDFDownloadLink document={<ReportDocument levantamento={previewLev} />} fileName={`relatorio-${previewLev.codigo}.pdf`} className="flex items-center gap-1 h-9 px-3 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
-              {({ loading }) => <>{loading ? 'Gerando PDF...' : <><Download size={16} /> Exportar PDF</>}</>}
-            </PDFDownloadLink>
+            <PdfDownloadButton levantamento={previewLev} fileName={`relatorio-${previewLev.codigo}.pdf`} className="flex items-center gap-1 h-9 px-3 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
+              <><Download size={16} /> Exportar PDF</>
+            </PdfDownloadButton>
           </div>
         </div>
         <ReportPreview levantamento={previewLev} modelo={modelo} />
@@ -85,6 +84,7 @@ export function Relatorios() {
       <div className="mb-6">
         <h1 className="text-xl font-bold text-text-primary">Relatórios</h1>
         <p className="text-sm text-text-secondary">{filtered.length} de {allRelatorios.length} relatório(s)</p>
+        <p className="text-xs text-risk-moderate mt-1">Histórico local deste dispositivo — não sincronizado com o servidor.</p>
       </div>
 
       <div className="relative mb-4">
@@ -147,9 +147,9 @@ export function Relatorios() {
                           const lv = levantamentos.find(lv => lv.id === r.levantamentoId)
                           if (!lv) return null
                           return (
-                            <PDFDownloadLink document={<ReportDocument levantamento={lv} />} fileName={`relatorio-${lv.codigo}.pdf`} className="flex items-center gap-1 text-xs text-text-secondary hover:text-text-primary font-medium">
-                              {({ loading }) => <>{loading ? 'Gerando...' : <><Download size={14} /> PDF</>}</>}
-                            </PDFDownloadLink>
+                            <PdfDownloadButton levantamento={lv} fileName={`relatorio-${lv.codigo}.pdf`} className="flex items-center gap-1 text-xs text-text-secondary hover:text-text-primary font-medium">
+                              <><Download size={14} /> PDF</>
+                            </PdfDownloadButton>
                           )
                         })()}
                       </div>
@@ -181,9 +181,9 @@ export function Relatorios() {
                     const lv = levantamentos.find(lv => lv.id === r.levantamentoId)
                     if (!lv) return null
                     return (
-                      <PDFDownloadLink document={<ReportDocument levantamento={lv} />} fileName={`relatorio-${lv.codigo}.pdf`} className="flex items-center gap-1 text-xs text-text-secondary hover:text-text-primary font-medium">
-                        {({ loading }) => <>{loading ? 'Gerando...' : <><Download size={14} /> PDF</>}</>}
-                      </PDFDownloadLink>
+                      <PdfDownloadButton levantamento={lv} fileName={`relatorio-${lv.codigo}.pdf`} className="flex items-center gap-1 text-xs text-text-secondary hover:text-text-primary font-medium">
+                        <><Download size={14} /> PDF</>
+                      </PdfDownloadButton>
                     )
                   })()}
                 </div>

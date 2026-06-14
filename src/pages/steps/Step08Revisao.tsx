@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Levantamento } from '@/types'
 import { formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
+import { ReportPreview } from '@/components/report/ReportPreview'
 import { CheckCircle2, AlertCircle, FileText, FileJson, Download, Check } from 'lucide-react'
 import { NIVEIS_RISCO } from '@/constants'
 
@@ -41,7 +42,15 @@ export function Step08Revisao({ data, onFinish, toasts }: Props) {
   const allChecked = checklist.every(i => i.ok)
 
   if (showReport) {
-    return <ReportPreviewContent data={data} onBack={() => setShowReport(false)} />
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-text-primary">Pré-visualização do Relatório</h3>
+          <button onClick={() => setShowReport(false)} className="text-sm text-brand-500 hover:text-brand-600">Voltar</button>
+        </div>
+        <ReportPreview levantamento={data} modelo="Completo" />
+      </div>
+    )
   }
 
   return (
@@ -142,106 +151,4 @@ function agrupar<T>(arr: T[], key: keyof T): Record<string, number> {
   }, {} as Record<string, number>)
 }
 
-function ReportPreviewContent({ data, onBack }: { data: Levantamento; onBack: () => void }) {
-  const c = data.caracteristicas || {} as Levantamento['caracteristicas']
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-primary">Pré-visualização do Relatório</h3>
-        <button onClick={onBack} className="text-sm text-brand-500 hover:text-brand-600">Voltar</button>
-      </div>
-      <div className="bg-white border border-border rounded-xl p-6 md:p-10 text-sm">
-        <div className="text-center mb-8 pb-6 border-b-2 border-brand-500">
-          <h1 className="text-xl font-bold text-text-primary">Efetiva RiskFlow — LPR/AEP Digital</h1>
-          <p className="text-xs text-text-secondary mt-1">Levantamento de Perigos e Riscos / Análise Ergonômica Preliminar</p>
-          {data.codigo && <p className="text-sm font-bold text-brand-500 mt-1">{data.codigo}</p>}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <h3 className="text-sm font-bold mb-2">Identificação</h3>
-            <table className="w-full text-xs">
-              <tbody>
-                <tr><td className="text-text-secondary py-1 pr-2 w-40">Empresa:</td><td className="font-medium">{data.empresaNome}</td></tr>
-                <tr><td className="text-text-secondary py-1 pr-2">CNPJ:</td><td className="font-medium">{data.cnpj}</td></tr>
-                <tr><td className="text-text-secondary py-1 pr-2">Tipo:</td><td className="font-medium">{data.tipo}</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div>
-            <h3 className="text-sm font-bold mb-2">Responsáveis</h3>
-            <table className="w-full text-xs">
-              <tbody>
-                <tr><td className="text-text-secondary py-1 pr-2 w-40">Responsável Empresa:</td><td className="font-medium">{data.responsavelEmpresa}</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="text-sm font-bold mb-3 pb-1 border-b border-border">Características do Local</h3>
-          <table className="w-full text-xs">
-            <tbody>
-              {c.comprimento || c.largura ? (
-                <tr><td className="text-text-secondary py-1 pr-2 w-40">Dimensões:</td><td className="font-medium">{c.comprimento || '0'}m x {c.largura || '0'}m</td></tr>
-              ) : c.dimensoes ? (
-                <tr><td className="text-text-secondary py-1 pr-2 w-40">Dimensões:</td><td className="font-medium">{c.dimensoes}</td></tr>
-              ) : null}
-              {c.peDireito ? <tr><td className="text-text-secondary py-1 pr-2">Pé-direito:</td><td className="font-medium">{c.peDireito}m</td></tr> : null}
-              {c.pavimento ? <tr><td className="text-text-secondary py-1 pr-2">Pavimento:</td><td className="font-medium">{c.pavimento}º</td></tr> : null}
-              {c.paredesVedacao ? <tr><td className="text-text-secondary py-1 pr-2">Paredes:</td><td className="font-medium">{c.paredesVedacao}</td></tr> : null}
-              {c.piso ? <tr><td className="text-text-secondary py-1 pr-2">Piso:</td><td className="font-medium">{c.piso}</td></tr> : null}
-              {c.forro ? <tr><td className="text-text-secondary py-1 pr-2">Forro:</td><td className="font-medium">{c.forro}</td></tr> : null}
-              {c.telhado ? <tr><td className="text-text-secondary py-1 pr-2">Telhado:</td><td className="font-medium">{c.telhado}</td></tr> : null}
-              {c.divisoria ? <tr><td className="text-text-secondary py-1 pr-2">Divisórias:</td><td className="font-medium">{c.divisoria}</td></tr> : null}
-              {c.iluminacaoNatural ? <tr><td className="text-text-secondary py-1 pr-2">Iluminação Natural:</td><td className="font-medium">{c.iluminacaoNatural}</td></tr> : null}
-              {c.iluminacaoArtificial ? <tr><td className="text-text-secondary py-1 pr-2">Iluminação Artificial:</td><td className="font-medium">{c.iluminacaoArtificial}</td></tr> : null}
-              {c.ventilacaoNatural ? <tr><td className="text-text-secondary py-1 pr-2">Ventilação Natural:</td><td className="font-medium">{c.ventilacaoNatural}</td></tr> : null}
-              {c.ventilacaoArtificial ? <tr><td className="text-text-secondary py-1 pr-2">Ventilação Artificial:</td><td className="font-medium">{c.ventilacaoArtificial}</td></tr> : null}
-              {c.possibilidadeGES ? <tr><td className="text-text-secondary py-1 pr-2">Possibilidade GES:</td><td className="font-medium">{c.possibilidadeGES}</td></tr> : null}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="text-sm font-bold mb-3 pb-1 border-b border-border">Inventário de Riscos</h3>
-          <table className="w-full text-xs border-collapse">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left p-2 font-medium text-text-secondary">Perigo</th>
-                <th className="text-left p-2 font-medium text-text-secondary">Categoria</th>
-                <th className="text-center p-2 font-medium text-text-secondary">Score</th>
-                <th className="text-center p-2 font-medium text-text-secondary">Nível</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(data.riscos || []).map((r) => (
-                <tr key={r.id} className="border-t border-border">
-                  <td className="p-2 font-medium">{r.perigo}</td>
-                  <td className="p-2">{r.categoria}</td>
-                  <td className="p-2 text-center font-bold">{r.pontuacao}</td>
-                  <td className="p-2 text-center">
-                    <Badge variant={r.nivel === NIVEIS_RISCO.CRITICO ? 'risk-critical' : r.nivel === NIVEIS_RISCO.ALTO ? 'risk-high' : r.nivel === NIVEIS_RISCO.MODERADO ? 'risk-moderate' : 'risk-low'}>{r.nivel}</Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {data.parecer?.texto && (
-          <div className="mb-6">
-            <h3 className="text-sm font-bold mb-3 pb-1 border-b border-border">Parecer Técnico</h3>
-            <pre className="text-xs text-text-primary whitespace-pre-wrap font-sans">{data.parecer.texto}</pre>
-          </div>
-        )}
-
-        <div className="text-center text-[10px] text-text-secondary mt-8 pt-4 border-t border-border">
-          <p>Documento gerado pelo Efetiva RiskFlow — LPR/AEP Digital</p>
-          <p>Data de emissão: {formatDate(new Date().toISOString())}</p>
-        </div>
-      </div>
-    </div>
-  )
-}
