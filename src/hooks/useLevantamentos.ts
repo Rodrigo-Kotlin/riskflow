@@ -56,7 +56,7 @@ export function useLevantamentos() {
         const e = err as Record<string, unknown>
         logData.code = e?.code; logData.message = e?.message; logData.details = e?.details; logData.hint = e?.hint
       }
-      console.error('[useLevantamentos] Erro ao excluir levantamento:', logData)
+      if (import.meta.env.DEV) console.error('[useLevantamentos] Erro ao excluir levantamento:', logData)
       throw err
     }
   }, [])

@@ -15,6 +15,7 @@ export async function listarItensBiblioteca(): Promise<BibliotecaTecnicaItem[]> 
     .select('*')
     .eq('ativo', true)
     .order('nome', { ascending: true })
+    .limit(200)
   if (error) throw error
   return (data || []) as BibliotecaTecnicaItem[]
 }
@@ -33,7 +34,7 @@ export async function buscarItensBiblioteca(
   if (search) {
     query = query.ilike('nome', `%${search}%`)
   }
-  const { data, error } = await query
+  const { data, error } = await query.limit(200)
   if (error) throw error
   return (data || []) as BibliotecaTecnicaItem[]
 }
