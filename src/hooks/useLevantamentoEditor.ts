@@ -62,7 +62,13 @@ function calcularPercentual(d: Levantamento): number {
 export function useLevantamentoEditor() {
   const { id } = useParams()
   const { toasts } = useApp()
-  const [currentStep, setCurrentStep] = useState(0)
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (id) {
+      const saved = localStorage.getItem(`riskflow_step_${id}`)
+      if (saved) return Math.min(parseInt(saved, 10), 7)
+    }
+    return 0
+  })
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const hasInteracted = useRef(false)
   const storedRef = useRef<Levantamento | null>(null)
@@ -148,6 +154,9 @@ export function useLevantamentoEditor() {
         if (data) {
           storedRef.current = data
           setLevantamento(data)
+          if (data.status === STATUS_LEVANTAMENTO.CONCLUIDO || data.status === STATUS_LEVANTAMENTO.EXPORTADO) {
+            setCurrentStep(0)
+          }
         }
       }).catch(() => {
         const stored = localStorage.getItem('riskflow_levantamentos')
@@ -158,12 +167,24 @@ export function useLevantamentoEditor() {
             if (found) {
               storedRef.current = found
               setLevantamento(found)
+              if (found.status === STATUS_LEVANTAMENTO.CONCLUIDO || found.status === STATUS_LEVANTAMENTO.EXPORTADO) {
+                setCurrentStep(0)
+              }
             }
           } catch { /* ignore */ }
         }
       })
     }
   }, [id])
+
+  useEffect(() => {
+    if (id) {
+      const status = levantamento.status
+      if (status !== STATUS_LEVANTAMENTO.CONCLUIDO && status !== STATUS_LEVANTAMENTO.EXPORTADO) {
+        localStorage.setItem(`riskflow_step_${id}`, String(currentStep))
+      }
+    }
+  }, [currentStep, id, levantamento.status])
 
   useEffect(() => {
     if (!hasInteracted.current) return
@@ -208,6 +229,7 @@ export function useLevantamentoEditor() {
       updatedAt: today(),
     }
     setLevantamento(toSave)
+    if (id) localStorage.removeItem(`riskflow_step_${id}`)
     try {
       await updateLevantamento(toSave)
     } catch {
