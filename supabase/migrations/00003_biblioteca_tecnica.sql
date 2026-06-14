@@ -649,7 +649,7 @@ select 'unidade_medida', nome, true from (values
   ('dB(A)'), ('dB(C)'), ('%'), ('ppm'), ('mg/m³'), ('fibra/cm³'), ('m/s²'),
   ('lux'), ('°C'), ('IBUTG'), ('m'), ('cm'), ('mm'), ('kg'), ('L'),
   ('min'), ('h'), ('µSv/h'), ('mA'), ('V'), ('A'), ('Ohm'), ('W/m²'),
-  ('m/s'), ('mg/m³'), ('°C'), ('°F'), ('kPa'), ('bar')
+  ('m/s'), ('°F'), ('kPa'), ('bar')
 ) v(nome)
 where not exists (
   select 1 from public.biblioteca_tecnica bt
