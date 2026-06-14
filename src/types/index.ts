@@ -94,7 +94,6 @@ export interface Controle {
 }
 
 export interface CaracteristicasLocal {
-  setor: string
   qtdColaboradores: number
   dimensoes: string
   comprimento: string
@@ -146,9 +145,7 @@ export interface Levantamento {
   empresaNome: string
   cnpj: string
   unidade: string
-  setor: string
   responsavelEmpresa: string
-  auditorTecnico: string
   registroMTE: string
   dataLevantamento: string
   dataLancamentoSGG: string

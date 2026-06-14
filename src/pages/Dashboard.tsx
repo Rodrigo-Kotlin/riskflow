@@ -149,7 +149,7 @@ export function Dashboard() {
                             <span className="text-sm font-medium text-text-primary">{l.codigo}</span>
                             <Badge variant={l.status === STATUS_LEVANTAMENTO.CONCLUIDO ? 'success' : l.status === STATUS_LEVANTAMENTO.EM_ANDAMENTO ? 'info' : l.status === STATUS_LEVANTAMENTO.RASCUNHO ? 'default' : 'warning'}>{l.status}</Badge>
                           </div>
-                          <p className="text-xs text-text-secondary truncate mt-0.5">{l.empresaNome} — {l.setor}</p>
+                          <p className="text-xs text-text-secondary truncate mt-0.5">{l.empresaNome}</p>
                         </div>
                         <div className="text-right shrink-0 ml-3">
                           <p className="text-xs text-text-secondary">{formatDate(l.dataLevantamento)}</p>

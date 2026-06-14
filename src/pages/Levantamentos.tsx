@@ -30,7 +30,7 @@ export function Levantamentos() {
 
 
   const filtered = useMemo(() => levantamentos.filter(l => {
-    const matchSearch = !search || l.empresaNome.toLowerCase().includes(search.toLowerCase()) || l.codigo.toLowerCase().includes(search.toLowerCase()) || l.setor.toLowerCase().includes(search.toLowerCase())
+    const matchSearch = !search || l.empresaNome.toLowerCase().includes(search.toLowerCase()) || l.codigo.toLowerCase().includes(search.toLowerCase())
     const matchStatus = statusFilter === 'Todos' || l.status === statusFilter
     const matchTipo = tipoFilter === 'Todos' || l.tipo === tipoFilter
     return matchSearch && matchStatus && matchTipo
@@ -149,7 +149,6 @@ export function Levantamentos() {
                       <p className="font-medium">{l.empresaNome}</p>
                       <p className="text-xs text-text-secondary">{l.cnpj}</p>
                     </td>
-                    <td className="py-3 px-4 text-sm">{l.setor}</td>
                     <td className="py-3 px-4 text-center"><Badge variant="info">{l.tipo}</Badge></td>
                     <td className="py-3 px-4 text-center text-sm">{formatDate(l.dataLevantamento)}</td>
                     <td className="py-3 px-4">
@@ -188,7 +187,6 @@ export function Levantamentos() {
                       <Badge variant={l.tipo === TIPOS_LEVANTAMENTO[0] ? 'info' : l.tipo === TIPOS_LEVANTAMENTO[2] ? 'warning' : 'success'}>{l.tipo}</Badge>
                     </div>
                     <p className="text-sm text-text-primary font-medium mt-0.5">{l.empresaNome}</p>
-                    <p className="text-xs text-text-secondary">{l.setor}</p>
                   </div>
                   <Badge variant={l.status === STATUS_LEVANTAMENTO.CONCLUIDO ? 'success' : l.status === STATUS_LEVANTAMENTO.EM_ANDAMENTO ? 'info' : 'default'}>{l.status}</Badge>
                 </div>

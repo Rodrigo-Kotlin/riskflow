@@ -47,7 +47,6 @@ export function ReportPreview({ levantamento, modelo }: ReportPreviewProps) {
             <tbody>
               <tr><td className="text-text-secondary py-1 pr-2 w-40">Empresa:</td><td className="font-medium">{l.empresaNome}</td></tr>
               <tr><td className="text-text-secondary py-1 pr-2">CNPJ:</td><td className="font-medium">{l.cnpj}</td></tr>
-              <tr><td className="text-text-secondary py-1 pr-2">Setor:</td><td className="font-medium">{l.setor}</td></tr>
               <tr><td className="text-text-secondary py-1 pr-2">Tipo:</td><td className="font-medium">{l.tipo}</td></tr>
               <tr><td className="text-text-secondary py-1 pr-2">Código:</td><td className="font-medium">{l.codigo}</td></tr>
               <tr><td className="text-text-secondary py-1 pr-2">Data:</td><td className="font-medium">{formatDate(l.dataLevantamento)}</td></tr>
@@ -59,7 +58,6 @@ export function ReportPreview({ levantamento, modelo }: ReportPreviewProps) {
           <table className="w-full text-xs">
             <tbody>
               <tr><td className="text-text-secondary py-1 pr-2 w-40">Responsável Empresa:</td><td className="font-medium">{l.responsavelEmpresa}</td></tr>
-              <tr><td className="text-text-secondary py-1 pr-2">Auditor Técnico:</td><td className="font-medium">{l.auditorTecnico}</td></tr>
             </tbody>
           </table>
         </div>
