@@ -119,11 +119,11 @@ export function Step06Controles({ data, updateData }: Props) {
           <p className="text-xs text-text-secondary">Consolidado dos controles recomendados</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={gerarControles} className="flex items-center gap-1 h-8 px-3 border border-brand-500 text-brand-500 text-xs font-medium rounded-lg hover:bg-brand-50">
-            <ClipboardList size={14} /> Consolidar dos Riscos
+          <button onClick={gerarControles} className="flex items-center gap-1 h-10 px-4 border border-brand-500 text-brand-500 text-sm font-medium rounded-lg hover:bg-brand-50">
+            <ClipboardList size={16} /> Consolidar dos Riscos
           </button>
-          <button onClick={openNew} className="flex items-center gap-1 h-8 px-3 bg-brand-500 text-white text-xs font-medium rounded-lg hover:bg-brand-600">
-            <Plus size={14} /> Adicionar
+          <button onClick={openNew} className="flex items-center gap-1 h-10 px-4 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
+            <Plus size={16} /> Adicionar
           </button>
         </div>
       </div>
@@ -260,8 +260,8 @@ export function Step06Controles({ data, updateData }: Props) {
           </InputField>
         </div>
         <div className="flex justify-end gap-3 mt-4 pt-3 border-t border-border">
-          <button onClick={() => setModalOpen(false)} className="px-3 h-8 text-sm text-text-secondary bg-gray-100 rounded-lg">Cancelar</button>
-          <button onClick={save} className="px-3 h-8 bg-brand-500 text-white text-sm font-medium rounded-lg">Salvar</button>
+          <button onClick={() => setModalOpen(false)} className="px-4 h-10 text-sm text-text-secondary bg-gray-100 rounded-lg">Cancelar</button>
+          <button onClick={save} className="px-4 h-10 bg-brand-500 text-white text-sm font-medium rounded-lg">Salvar</button>
         </div>
       </Modal>
     </div>

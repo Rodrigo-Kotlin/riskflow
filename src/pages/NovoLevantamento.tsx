@@ -52,6 +52,22 @@ export function NovoLevantamento() {
 
   const handleFinish = useCallback(async () => {
     if (isFinalizing) return
+    if (!levantamento.empresaNome?.trim()) {
+      toasts.addToast('error', 'Dados insuficientes', 'Identificação da empresa é obrigatória.')
+      return
+    }
+    if (!levantamento.caracteristicas?.qtdColaboradores) {
+      toasts.addToast('error', 'Dados insuficientes', 'Informe ao menos 1 colaborador nas Características do Local.')
+      return
+    }
+    if (levantamento.riscos.length === 0) {
+      toasts.addToast('error', 'Dados insuficientes', 'Cadastre ao menos um risco no inventário.')
+      return
+    }
+    if (levantamento.controles.length === 0) {
+      toasts.addToast('error', 'Dados insuficientes', 'Cadastre ao menos um controle ou plano de ação.')
+      return
+    }
     setIsFinalizing(true)
     try {
       const result = await finalizar()
@@ -70,7 +86,7 @@ export function NovoLevantamento() {
     } finally {
       setIsFinalizing(false)
     }
-  }, [isFinalizing, finalizar, toasts, navigate])
+  }, [isFinalizing, finalizar, toasts, navigate, levantamento])
 
   const stepProps = { data: levantamento, updateData, saveRascunho: salvarRascunho, toasts }
 

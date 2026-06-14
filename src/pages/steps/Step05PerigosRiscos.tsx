@@ -170,8 +170,8 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
           <h3 className="text-sm font-semibold text-text-primary">Inventário de Riscos ({riscos.length})</h3>
           <p className="text-xs text-text-secondary">Cadastre os perigos e riscos identificados no local</p>
         </div>
-        <button onClick={openNew} className="flex items-center gap-1 h-9 px-4 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
-          <Plus size={16} /> Adicionar Risco
+        <button onClick={openNew} className="flex items-center gap-1 h-10 px-5 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
+          <Plus size={18} /> Adicionar Risco
         </button>
       </div>
 
@@ -305,8 +305,8 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
           </InputField>
         </div>
         <div className="flex justify-end gap-3 mt-4 pt-3 border-t border-border">
-          <button onClick={() => setModalOpen(false)} className="px-3 h-9 text-sm text-text-secondary bg-gray-100 rounded-lg">Cancelar</button>
-          <button onClick={save} className="px-3 h-9 bg-brand-500 text-white text-sm font-medium rounded-lg">Salvar Risco</button>
+          <button onClick={() => setModalOpen(false)} className="px-4 h-10 text-sm text-text-secondary bg-gray-100 rounded-lg">Cancelar</button>
+          <button onClick={save} className="px-4 h-10 bg-brand-500 text-white text-sm font-medium rounded-lg">Salvar Risco</button>
         </div>
       </Modal>
 
