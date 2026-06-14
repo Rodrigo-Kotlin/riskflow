@@ -21,18 +21,21 @@ export function Step03Medicoes({ data, updateData }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<Medicao>(emptyMedicao)
+  const [rawValues, setRawValues] = useState<Record<string, string>>({})
 
   const medicoes = data.medicoes || []
 
   const openNew = () => {
     setForm({ ...emptyMedicao, id: generateId() })
     setEditingId(null)
+    setRawValues({})
     setModalOpen(true)
   }
 
   const openEdit = (m: Medicao) => {
     setForm({ ...m })
     setEditingId(m.id)
+    setRawValues({})
     setModalOpen(true)
   }
 
@@ -48,11 +51,18 @@ export function Step03Medicoes({ data, updateData }: Props) {
 
   const formatMedDisplay = useCallback((val: number) => {
     if (val === 0) return ''
-    return val.toFixed(1).replace('.', ',')
+    return val.toFixed(3).replace('.', ',')
   }, [])
+
+  const getInputValue = useCallback((field: string, val: number) => {
+    if (field in rawValues) return rawValues[field]
+    if (val === 0) return ''
+    return String(val).replace('.', ',')
+  }, [rawValues])
 
   const handleMedInput = useCallback((field: keyof Medicao) => (e: React.ChangeEvent<HTMLInputElement>) => {
     let v = e.target.value.replace(/[^\d,]/g, '')
+    setRawValues((prev: Record<string, string>) => ({ ...prev, [field]: v }))
     const parts = v.split(',')
     if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('')
     if (v === '' || v === ',') {
@@ -64,10 +74,15 @@ export function Step03Medicoes({ data, updateData }: Props) {
   }, [])
 
   const handleMedBlur = useCallback((field: keyof Medicao) => () => {
+    setRawValues((prev: Record<string, string>) => {
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
     setForm((prev: Medicao) => {
       const val = prev[field] as number
       if (val === 0) return prev
-      const formatted = parseFloat(val.toFixed(1))
+      const formatted = parseFloat(val.toFixed(3))
       return { ...prev, [field]: formatted }
     })
   }, [])
@@ -109,10 +124,10 @@ export function Step03Medicoes({ data, updateData }: Props) {
                 {medicoes.map((m: Medicao) => (
                   <tr key={m.id} className="border-b border-border">
                     <td className="py-2 px-2 font-medium">{m.postoLocal}</td>
-                    <td className="py-2 px-2 text-center">{m.ruidoDbA}</td>
-                    <td className="py-2 px-2 text-center">{m.iluminanciaLux}</td>
-                    <td className="py-2 px-2 text-center">{m.temperatura}°C</td>
-                    <td className="py-2 px-2 text-center">{m.umidade}%</td>
+                    <td className="py-2 px-2 text-center">{formatMedDisplay(m.ruidoDbA)}</td>
+                    <td className="py-2 px-2 text-center">{formatMedDisplay(m.iluminanciaLux)}</td>
+                    <td className="py-2 px-2 text-center">{formatMedDisplay(m.temperatura)}°C</td>
+                    <td className="py-2 px-2 text-center">{formatMedDisplay(m.umidade)}%</td>
                     <td className="py-2 px-2">
                       <div className="flex justify-center gap-1">
                         <button onClick={() => openEdit(m)} className="p-1 text-text-secondary hover:text-text-primary rounded hover:bg-gray-100" aria-label="Editar medição"><Edit3 size={14} /></button>
@@ -137,9 +152,9 @@ export function Step03Medicoes({ data, updateData }: Props) {
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 mt-2 text-xs text-text-secondary">
-                  <span>Ruído: {m.ruidoDbA} dB(A)</span>
-                  <span>Lux: {m.iluminanciaLux}</span>
-                  <span>Temp: {m.temperatura}°C</span>
+                  <span>Ruído: {formatMedDisplay(m.ruidoDbA)} dB(A)</span>
+                  <span>Lux: {formatMedDisplay(m.iluminanciaLux)}</span>
+                  <span>Temp: {formatMedDisplay(m.temperatura)}°C</span>
                 </div>
               </div>
             ))}
@@ -152,12 +167,12 @@ export function Step03Medicoes({ data, updateData }: Props) {
           <InputField label="Posto/Local Avaliado" required className="md:col-span-2" inputId="medicao-postoLocal">
             <input id="medicao-postoLocal" value={form.postoLocal} onChange={(e) => setForm({ ...form, postoLocal: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" />
           </InputField>
-          <InputField label="Ruído dB(A)" inputId="medicao-ruidoDbA"><input id="medicao-ruidoDbA" type="text" inputMode="decimal" value={formatMedDisplay(form.ruidoDbA)} onChange={handleMedInput('ruidoDbA')} onBlur={handleMedBlur('ruidoDbA')} placeholder="0,0" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
+          <InputField label="Ruído dB(A)" inputId="medicao-ruidoDbA"><input id="medicao-ruidoDbA" type="text" inputMode="decimal" value={getInputValue('ruidoDbA', form.ruidoDbA)} onChange={handleMedInput('ruidoDbA')} onBlur={handleMedBlur('ruidoDbA')} placeholder="0,000" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Tempo de Exposição" inputId="medicao-tempoExposicao"><input id="medicao-tempoExposicao" value={form.tempoExposicao} onChange={(e) => setForm({ ...form, tempoExposicao: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
-          <InputField label="Iluminância (lux)" inputId="medicao-iluminanciaLux"><input id="medicao-iluminanciaLux" type="text" inputMode="decimal" value={formatMedDisplay(form.iluminanciaLux)} onChange={handleMedInput('iluminanciaLux')} onBlur={handleMedBlur('iluminanciaLux')} placeholder="0,0" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
-          <InputField label="Temperatura (°C)" inputId="medicao-temperatura"><input id="medicao-temperatura" type="text" inputMode="decimal" value={formatMedDisplay(form.temperatura)} onChange={handleMedInput('temperatura')} onBlur={handleMedBlur('temperatura')} placeholder="0,0" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
-          <InputField label="Umidade (%)" inputId="medicao-umidade"><input id="medicao-umidade" type="text" inputMode="decimal" value={formatMedDisplay(form.umidade)} onChange={handleMedInput('umidade')} onBlur={handleMedBlur('umidade')} placeholder="0,0" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
-          <InputField label="Velocidade do Ar (m/s)" inputId="medicao-velocidadeAr"><input id="medicao-velocidadeAr" type="text" inputMode="decimal" value={formatMedDisplay(form.velocidadeAr)} onChange={handleMedInput('velocidadeAr')} onBlur={handleMedBlur('velocidadeAr')} placeholder="0,0" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
+          <InputField label="Iluminância (lux)" inputId="medicao-iluminanciaLux"><input id="medicao-iluminanciaLux" type="text" inputMode="decimal" value={getInputValue('iluminanciaLux', form.iluminanciaLux)} onChange={handleMedInput('iluminanciaLux')} onBlur={handleMedBlur('iluminanciaLux')} placeholder="0,000" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
+          <InputField label="Temperatura (°C)" inputId="medicao-temperatura"><input id="medicao-temperatura" type="text" inputMode="decimal" value={getInputValue('temperatura', form.temperatura)} onChange={handleMedInput('temperatura')} onBlur={handleMedBlur('temperatura')} placeholder="0,000" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
+          <InputField label="Umidade (%)" inputId="medicao-umidade"><input id="medicao-umidade" type="text" inputMode="decimal" value={getInputValue('umidade', form.umidade)} onChange={handleMedInput('umidade')} onBlur={handleMedBlur('umidade')} placeholder="0,000" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
+          <InputField label="Velocidade do Ar (m/s)" inputId="medicao-velocidadeAr"><input id="medicao-velocidadeAr" type="text" inputMode="decimal" value={getInputValue('velocidadeAr', form.velocidadeAr)} onChange={handleMedInput('velocidadeAr')} onBlur={handleMedBlur('velocidadeAr')} placeholder="0,000" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Radiação" inputId="medicao-radiacao"><input id="medicao-radiacao" value={form.radiacao} onChange={(e) => setForm({ ...form, radiacao: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Equipamento" inputId="medicao-equipamento"><input id="medicao-equipamento" value={form.equipamento} onChange={(e) => setForm({ ...form, equipamento: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Data/Hora" inputId="medicao-dataHora"><input id="medicao-dataHora" type="datetime-local" value={form.dataHora} onChange={(e) => setForm({ ...form, dataHora: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
