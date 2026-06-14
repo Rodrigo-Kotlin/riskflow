@@ -56,9 +56,9 @@ export async function getProfile(userId: string) {
     .from('profiles')
     .select('id, nome, email, perfil')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
   if (error) throw error
-  return data as { id: string; nome: string; email: string | null; perfil: string }
+  return data as { id: string; nome: string; email: string | null; perfil: string } | null
 }
 
 // ─── Empresas ───────────────────────────────────────────────────────────────
