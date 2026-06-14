@@ -86,7 +86,7 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
 
     useImperativeHandle(ref, () => ({ trigger }), [trigger])
 
-    const formatarDecimal = useCallback((raw: string, casas: number) => {
+    const formatarDecimal = useCallback((raw: string) => {
       let v = raw.replace(/[^\d,]/g, '')
       const parts = v.split(',')
       if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('')
@@ -94,7 +94,7 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
     }, [])
 
     const handleDecimalInput = useCallback((field: keyof StepForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setValue(field, formatarDecimal(e.target.value, 2))
+      setValue(field, formatarDecimal(e.target.value))
     }, [formatarDecimal, setValue])
 
     const handleDecimalBlur = useCallback((field: keyof StepForm) => () => {
@@ -205,7 +205,7 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
               <div className="flex items-center gap-2">
                 <input id="caracteristicas-comprimento" {...register('comprimento', {
                   onChange: handleDecimalInput('comprimento'),
-                  onBlur: (e) => { handleDecimalBlur('comprimento')(); syncCampos() },
+                  onBlur: () => { handleDecimalBlur('comprimento')(); syncCampos() },
                 })}
                   inputMode="decimal"
                   placeholder="0,00"
@@ -218,7 +218,7 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
               <div className="flex items-center gap-2">
                 <input id="caracteristicas-largura" {...register('largura', {
                   onChange: handleDecimalInput('largura'),
-                  onBlur: (e) => { handleDecimalBlur('largura')(); syncCampos() },
+                  onBlur: () => { handleDecimalBlur('largura')(); syncCampos() },
                 })}
                   inputMode="decimal"
                   placeholder="0,00"
@@ -231,7 +231,7 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
               <div className="flex items-center gap-2">
                 <input id="caracteristicas-peDireito" {...register('peDireito', {
                   onChange: handleDecimalInput('peDireito'),
-                  onBlur: (e) => { handleDecimalBlur('peDireito')(); syncCampos() },
+                  onBlur: () => { handleDecimalBlur('peDireito')(); syncCampos() },
                 })}
                   inputMode="decimal"
                   placeholder="0,00"

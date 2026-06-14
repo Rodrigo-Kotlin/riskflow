@@ -7,7 +7,7 @@ import { STATUS_LEVANTAMENTO } from '@/constants'
 import { createLevantamento, updateLevantamento, getLevantamento } from '@/services/supabase.service'
 import { gerarCodigoDocumento } from '@/services/codigo.service'
 
-export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'saved-local' | 'error'
 
 function criarRascunhoVazio(): Levantamento {
   return {
@@ -116,7 +116,7 @@ export function useLevantamentoEditor() {
       if (idx >= 0) list[idx] = toSave
       else list.push(toSave)
       localStorage.setItem('riskflow_levantamentos', JSON.stringify(list))
-      setSaveStatus('saved')
+      setSaveStatus('saved-local')
     }
   }, [id])
 
@@ -210,7 +210,7 @@ export function useLevantamentoEditor() {
     setCurrentStep(s => Math.max(s - 1, 0))
   }, [])
 
-  const finalizar = useCallback(async () => {
+  const finalizar = useCallback(async (): Promise<{ saved: boolean; local: boolean }> => {
     let toSave = { ...levantamento }
 
     if (!toSave.codigo) {
@@ -232,15 +232,21 @@ export function useLevantamentoEditor() {
     if (id) localStorage.removeItem(`riskflow_step_${id}`)
     try {
       await updateLevantamento(toSave)
+      return { saved: true, local: false }
     } catch {
-      const stored = localStorage.getItem('riskflow_levantamentos')
-      const list: Levantamento[] = stored ? JSON.parse(stored) : []
-      const idx = list.findIndex(l => l.id === toSave.id)
-      if (idx >= 0) list[idx] = toSave
-      else list.push(toSave)
-      localStorage.setItem('riskflow_levantamentos', JSON.stringify(list))
+      try {
+        const stored = localStorage.getItem('riskflow_levantamentos')
+        const list: Levantamento[] = stored ? JSON.parse(stored) : []
+        const idx = list.findIndex(l => l.id === toSave.id)
+        if (idx >= 0) list[idx] = toSave
+        else list.push(toSave)
+        localStorage.setItem('riskflow_levantamentos', JSON.stringify(list))
+        return { saved: true, local: true }
+      } catch {
+        return { saved: false, local: false }
+      }
     }
-  }, [levantamento])
+  }, [levantamento, id])
 
   return {
     levantamento,

@@ -17,7 +17,7 @@ interface Props {
 
 function emptyControle(): Controle {
   return {
-    id: '', riscoId: '', acao: '', origem: '', tipo: TIPOS_CONTROLE[0],
+    id: generateId(), riscoId: '', acao: '', origem: '', tipo: TIPOS_CONTROLE[0],
     responsavel: '', prazo: '', prioridade: PRIORIDADE_CONTROLE.MEDIA, status: STATUS_CONTROLE.PENDENTE,
     custoEstimado: '', observacoes: ''
   }
