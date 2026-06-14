@@ -28,7 +28,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         <div className="flex items-center justify-between h-14 shrink-0 px-4 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">RF</span>
+              <img src="/icon-32x32.png" alt="RiskFlow" className="w-6 h-6" />
             </div>
             <div>
               <span className="font-semibold text-text-primary text-sm">Efetiva RiskFlow</span>

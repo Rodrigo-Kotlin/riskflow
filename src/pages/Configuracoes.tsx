@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Moon, Sun, Download, Upload, Trash2, Shield } from 'lucide-react'
+import { Moon, Sun, Download, Upload, Trash2 } from 'lucide-react'
 import { useApp } from '@/components/layout/AppShell'
 import { exportData, importData, clearAllData } from '@/lib/storage'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -83,7 +83,7 @@ export function Configuracoes() {
           <div className="p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center">
-                <Shield size={20} className="text-white" />
+                <img src="/icon-48x48.png" alt="" className="w-7 h-7" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-text-primary">{user?.nome || 'Usuário'}</p>

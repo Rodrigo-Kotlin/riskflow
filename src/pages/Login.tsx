@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '@/components/layout/AppShell'
 import { supabaseConfigurado } from '@/lib/supabase'
 import { signIn, signUp } from '@/services/supabase.service'
-import { Shield, Eye, EyeOff, Loader2, UserPlus, LogIn } from 'lucide-react'
+import { Eye, EyeOff, Loader2, UserPlus, LogIn } from 'lucide-react'
 
 export function Login() {
   const navigate = useNavigate()
@@ -105,7 +105,7 @@ export function Login() {
           <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-10">
             <div className="text-center mb-8">
               <div className="w-16 h-16 rounded-2xl bg-brand-500 flex items-center justify-center mx-auto mb-4">
-                <Shield size={32} className="text-white" />
+                <img src="/icon-96x96.png" alt="RiskFlow" className="w-12 h-12" />
               </div>
               <h1 className="text-2xl font-bold text-text-primary">Efetiva RiskFlow</h1>
               <p className="text-sm text-text-secondary mt-1">Gestão digital de LPR, AEP e riscos ocupacionais</p>
