@@ -1,22 +1,10 @@
-import { useEffect, createContext, useContext } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ToastContainer } from '@/components/ui/Toast'
 import { useToast } from '@/hooks/useToast'
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
-import { Usuario } from '@/types'
+import { AppContext } from '@/contexts/AppContext'
 import { migrateLocalCatalogsToSupabase } from '@/services/migrate-local'
-
-interface AppContextType {
-  user: Usuario | null
-  setUser: (u: Usuario | null) => void
-  toasts: ReturnType<typeof useToast>
-  supabaseReady: boolean
-  signOut: () => Promise<void>
-}
-
-const AppContext = createContext<AppContextType>(null!)
-
-export const useApp = () => useContext(AppContext)
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()

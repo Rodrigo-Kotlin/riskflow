@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Levantamento } from '@/types'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 import { generateId, today } from '@/lib/utils'
 import { STATUS_LEVANTAMENTO } from '@/constants'
 import { createLevantamento, updateLevantamento, getLevantamento } from '@/services/supabase.service'

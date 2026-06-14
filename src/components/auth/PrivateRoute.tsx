@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 
 export function PrivateRoute() {
   const { user, supabaseReady } = useApp()

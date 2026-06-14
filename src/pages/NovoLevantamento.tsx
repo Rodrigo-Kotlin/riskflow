@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 import { Stepper } from '@/components/forms/Stepper'
 import { Step01Identificacao } from './steps/Step01Identificacao'
 import { Step02Caracteristicas } from './steps/Step02Caracteristicas'

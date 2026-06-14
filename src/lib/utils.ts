@@ -1,13 +1,21 @@
 export function formatDate(date: string): string {
   if (!date) return ''
-  const d = new Date(date)
-  return d.toLocaleDateString('pt-BR')
+  // YYYY-MM-DD (date-only) → treat as local date to avoid timezone shift
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const [y, m, d] = date.split('-').map(Number)
+    return new Date(y, m - 1, d).toLocaleDateString('pt-BR')
+  }
+  return new Date(date).toLocaleDateString('pt-BR')
 }
 
 export function formatDateTime(date: string): string {
   if (!date) return ''
-  const d = new Date(date)
-  return d.toLocaleString('pt-BR')
+  // YYYY-MM-DD (date-only) → treat as local date
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const [y, m, d] = date.split('-').map(Number)
+    return new Date(y, m - 1, d).toLocaleString('pt-BR')
+  }
+  return new Date(date).toLocaleString('pt-BR')
 }
 
 export function generateId(): string {

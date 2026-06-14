@@ -4,7 +4,7 @@ import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { BottomNavigation } from './BottomNavigation'
 import { OfflineBanner } from '@/components/ui/OfflineBanner'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 
 export function AuthenticatedLayout() {
   const { user, supabaseReady } = useApp()

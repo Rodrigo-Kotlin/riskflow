@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Moon, Sun, Download, Upload, Trash2 } from 'lucide-react'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 import { exportData, importData, clearAllData } from '@/lib/storage'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { FormSection } from '@/components/forms/FormSection'

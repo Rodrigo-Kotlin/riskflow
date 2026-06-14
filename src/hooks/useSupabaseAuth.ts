@@ -27,7 +27,6 @@ export function useSupabaseAuth() {
               id: session.user.id,
               nome: profile.nome || session.user.email?.split('@')[0] || '',
               email: profile.email || session.user.email || '',
-              senha: '',
               perfil: (profile.perfil as Usuario['perfil']) || 'visualizador',
             })
           }
@@ -54,7 +53,6 @@ export function useSupabaseAuth() {
             id: session.user.id,
             nome: profile.nome || session.user.email?.split('@')[0] || '',
             email: profile.email || session.user.email || '',
-            senha: '',
             perfil: (profile.perfil as Usuario['perfil']) || 'visualizador',
           }
           setUser(u)

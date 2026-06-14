@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BookOpen, Search, Plus, Pencil, X, AlertCircle, Hash, Tag } from 'lucide-react'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'

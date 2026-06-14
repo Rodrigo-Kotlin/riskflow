@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Empresa } from '@/types'
 import { useEmpresas } from '@/hooks/useEmpresas'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 import { generateId } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'

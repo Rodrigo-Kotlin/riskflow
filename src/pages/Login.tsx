@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useApp } from '@/components/layout/AppShell'
+import { useApp } from '@/contexts/AppContext'
 import { supabaseConfigurado } from '@/lib/supabase'
 import { signIn, signUp } from '@/services/supabase.service'
 import { Eye, EyeOff, Loader2, UserPlus, LogIn } from 'lucide-react'
