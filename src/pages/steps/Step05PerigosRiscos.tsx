@@ -21,9 +21,11 @@ const CATEGORIA_MAP: Record<string, RiscoCategoria> = {
   'Biomecânico': 'Biomecânicos',
   'Psicossocial': 'Psicossociais/Cognitivos',
   'Acidente': 'Acidentes/Mecânicos',
+  'Acidente/Mecânico': 'Acidentes/Mecânicos',
   'Acidentes/Mecânicos': 'Acidentes/Mecânicos',
   'Mecânico': 'Acidentes/Mecânicos',
   'Organizacional': 'Organizacionais',
+  'Ambiental': 'Ambientais',
 }
 
 function mapBibliotecaToRisco(item: BibliotecaTecnicaItem): Omit<Risco, 'id'> {
