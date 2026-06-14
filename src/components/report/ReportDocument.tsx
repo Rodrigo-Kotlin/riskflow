@@ -137,7 +137,7 @@ export default function ReportDocument({ levantamento }: ReportDocumentProps) {
         <View style={styles.row}><Text style={styles.label}>Auditor Técnico:</Text><Text style={styles.value}>{l.auditorTecnico}</Text></View>
 
         <Text style={{ ...styles.sectionTitle, marginTop: 16 }}>Características do Local</Text>
-        {Object.entries(l.caracteristicas).filter(([k]) => k !== 'imagens').map(([key, value]) => (
+        {Object.entries(l.caracteristicas).filter(([k]) => k !== 'imagens' && k !== 'revestimento').map(([key, value]) => (
           <View key={key} style={styles.row}>
             <Text style={styles.label}>{LABELS_CARACTERISTICAS[key] ?? key}:</Text>
             <Text style={styles.value}>{String(value) || '-'}</Text>

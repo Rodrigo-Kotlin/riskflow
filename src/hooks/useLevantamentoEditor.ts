@@ -74,7 +74,7 @@ function hasDraftContent(d: Levantamento): boolean {
 function calcularPercentual(d: Levantamento): number {
   let total = 0
   if (d.empresaNome) total += 14.3
-  if (d.caracteristicas.setor) total += 14.3
+  if (d.setor || d.caracteristicas.setor) total += 14.3
   if (d.medicoes.length > 0) total += 14.3
   if (d.colaboradores.length > 0) total += 14.3
   if (d.riscos.length > 0) total += 14.3
