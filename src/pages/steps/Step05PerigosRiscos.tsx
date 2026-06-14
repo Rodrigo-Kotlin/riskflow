@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Risco, RiscoCategoria, Levantamento } from '@/types'
 import { generateId, calcularNivelRisco } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
@@ -99,6 +99,11 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
     })()
     return () => { cancelled = true }
   }, [])
+
+  const filteredLibraryItems = useMemo(() =>
+    libraryItems.filter(r => r.categoria === form.categoria),
+    [libraryItems, form.categoria]
+  )
 
   const riscos: Risco[] = data.riscos || []
 
@@ -217,7 +222,9 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                {libraryItems.map((r, i) => (
+                {filteredLibraryItems.length === 0 ? (
+                  <p className="text-xs text-text-secondary col-span-2 py-2">Nenhum item da biblioteca para esta categoria.</p>
+                ) : filteredLibraryItems.map((r, i) => (
                   <button key={i} onClick={() => loadFromLibrary(r)} className="text-left p-2 border border-border rounded-lg hover:border-brand-500 hover:bg-brand-50 text-xs">
                     <span className="font-medium text-text-primary">{r.perigo}</span>
                     <span className="font-medium text-text-secondary ml-2">{r.categoria}</span>
@@ -240,11 +247,15 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
           <InputField label="Dano ou Potencial Efeito" className="md:col-span-2" inputId="risco-dano">
             <textarea id="risco-dano" value={form.dano} onChange={(e) => setForm({ ...form, dano: e.target.value })} rows={2} className="w-full px-3 py-2 rounded-lg border border-border text-sm" />
           </InputField>
-          <InputField label="Severidade (1-5)" inputId="risco-severidade">
-            <input id="risco-severidade" type="number" min={1} max={5} value={form.severidade} onChange={(e) => setForm({ ...form, severidade: Number(e.target.value) })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" />
+          <InputField label="Severidade" inputId="risco-severidade">
+            <select id="risco-severidade" value={form.severidade} onChange={(e) => setForm({ ...form, severidade: Number(e.target.value) })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
+              {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
           </InputField>
-          <InputField label="Probabilidade (1-5)" inputId="risco-probabilidade">
-            <input id="risco-probabilidade" type="number" min={1} max={5} value={form.probabilidade} onChange={(e) => setForm({ ...form, probabilidade: Number(e.target.value) })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" />
+          <InputField label="Probabilidade" inputId="risco-probabilidade">
+            <select id="risco-probabilidade" value={form.probabilidade} onChange={(e) => setForm({ ...form, probabilidade: Number(e.target.value) })} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-white">
+              {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
           </InputField>
           <InputField label="Pontuação / Nível" inputId="risco-pontuacao">
             <input id="risco-pontuacao" value={`${form.severidade * form.probabilidade} — ${calcularNivelRisco(form.severidade, form.probabilidade).nivel}`} className="w-full h-9 px-3 rounded-lg border border-border text-sm bg-gray-50 font-bold" readOnly />

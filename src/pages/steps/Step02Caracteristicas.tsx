@@ -63,7 +63,7 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
   ({ data, updateData }, ref) => {
     const c = useMemo(() => data.caracteristicas || {} as CaracteristicasLocal, [data.caracteristicas])
 
-    const { register, formState: { errors }, trigger, getValues } = useForm<StepForm>({
+    const { register, formState: { errors }, trigger, getValues, setValue } = useForm<StepForm>({
       resolver: zodResolver(stepSchema),
       defaultValues: {
         qtdColaboradores: String(c.qtdColaboradores || ''),
@@ -85,6 +85,28 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
     const [novoEquipamento, setNovoEquipamento] = useState('')
 
     useImperativeHandle(ref, () => ({ trigger }), [trigger])
+
+    const formatarDecimal = useCallback((raw: string, casas: number) => {
+      let v = raw.replace(/[^\d,]/g, '')
+      const parts = v.split(',')
+      if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('')
+      return v
+    }, [])
+
+    const handleDecimalInput = useCallback((field: keyof StepForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setValue(field, formatarDecimal(e.target.value, 2))
+    }, [formatarDecimal, setValue])
+
+    const handleDecimalBlur = useCallback((field: keyof StepForm) => () => {
+      const value = getValues(field) || ''
+      const cleaned = value.replace(',', '.')
+      const num = parseFloat(cleaned)
+      if (!isNaN(num)) {
+        setValue(field, num.toFixed(2).replace('.', ','))
+      } else {
+        setValue(field, '')
+      }
+    }, [getValues, setValue])
 
     const syncCampos = useCallback(() => {
       const values = getValues()
@@ -181,8 +203,11 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
 
             <InputField label="Comprimento" inputId="caracteristicas-comprimento">
               <div className="flex items-center gap-2">
-                <input id="caracteristicas-comprimento" {...register('comprimento')}
-                  onBlur={syncCampos}
+                <input id="caracteristicas-comprimento" {...register('comprimento', {
+                  onChange: handleDecimalInput('comprimento'),
+                  onBlur: (e) => { handleDecimalBlur('comprimento')(); syncCampos() },
+                })}
+                  inputMode="decimal"
                   placeholder="0,00"
                   className="input-base flex-1" />
                 <span className="text-sm font-medium text-text-secondary whitespace-nowrap">m</span>
@@ -191,8 +216,11 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
 
             <InputField label="Largura" inputId="caracteristicas-largura">
               <div className="flex items-center gap-2">
-                <input id="caracteristicas-largura" {...register('largura')}
-                  onBlur={syncCampos}
+                <input id="caracteristicas-largura" {...register('largura', {
+                  onChange: handleDecimalInput('largura'),
+                  onBlur: (e) => { handleDecimalBlur('largura')(); syncCampos() },
+                })}
+                  inputMode="decimal"
                   placeholder="0,00"
                   className="input-base flex-1" />
                 <span className="text-sm font-medium text-text-secondary whitespace-nowrap">m</span>
@@ -201,8 +229,11 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
 
             <InputField label="Pé-direito" inputId="caracteristicas-peDireito">
               <div className="flex items-center gap-2">
-                <input id="caracteristicas-peDireito" {...register('peDireito')}
-                  onBlur={syncCampos}
+                <input id="caracteristicas-peDireito" {...register('peDireito', {
+                  onChange: handleDecimalInput('peDireito'),
+                  onBlur: (e) => { handleDecimalBlur('peDireito')(); syncCampos() },
+                })}
+                  inputMode="decimal"
                   placeholder="0,00"
                   className="input-base flex-1" />
                 <span className="text-sm font-medium text-text-secondary whitespace-nowrap">m</span>
