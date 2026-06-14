@@ -5,18 +5,22 @@ import { useApp } from '@/components/layout/AppShell'
 import { generateId, today } from '@/lib/utils'
 import { STATUS_LEVANTAMENTO } from '@/constants'
 import { createLevantamento, updateLevantamento, getLevantamento } from '@/services/supabase.service'
+import { gerarCodigoDocumento } from '@/services/codigo.service'
+
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 function criarRascunhoVazio(): Levantamento {
   return {
     id: generateId(),
     tipo: 'LPR',
-    codigo: `LPR-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 999)).padStart(3, '0')}`,
+    codigo: '',
     empresaId: '', empresaNome: '', cnpj: '', unidade: '', setor: '',
     responsavelEmpresa: '', auditorTecnico: '', registroMTE: '',
     dataLevantamento: today(), dataLancamentoSGG: '', responsavelLancamento: '',
     status: STATUS_LEVANTAMENTO.RASCUNHO, percentual: 0,
     caracteristicas: {
-      setor: '', qtdColaboradores: 0, dimensoes: '', peDireito: '', pavimento: '',
+      setor: '', qtdColaboradores: 0, dimensoes: '', comprimento: '', largura: '',
+      peDireito: '', pavimento: '',
       paredesVedacao: '', divisoria: '', piso: '', revestimento: '', forro: '',
       telhado: '', iluminacaoNatural: '', iluminacaoArtificial: '', ventilacaoNatural: '',
       ventilacaoArtificial: '', sistemaIncendio: '', possibilidadeGES: '', mobiliarios: '',
@@ -34,11 +38,9 @@ function hasDraftContent(d: Levantamento): boolean {
   return !!(
     d.empresaNome?.trim() ||
     d.cnpj?.trim() ||
-    d.unidade?.trim() ||
     d.setor?.trim() ||
     d.responsavelEmpresa?.trim() ||
     d.auditorTecnico?.trim() ||
-    d.registroMTE?.trim() ||
     d.caracteristicas?.setor?.trim() ||
     (d.caracteristicas?.qtdColaboradores ?? 0) > 0 ||
     d.medicoes.length > 0 ||
@@ -51,14 +53,13 @@ function hasDraftContent(d: Levantamento): boolean {
 
 function calcularPercentual(d: Levantamento): number {
   let total = 0
-  if (d.empresaNome) total += 12.5
-  if (d.caracteristicas.setor) total += 12.5
-  if (d.medicoes.length > 0) total += 12.5
-  if (d.colaboradores.length > 0) total += 12.5
-  if (d.riscos.length > 0) total += 12.5
-  if (d.controles.length > 0) total += 12.5
-  if (d.parecer.texto) total += 12.5
-  if (d.assinaturaTecnico.confirmada || d.assinaturaEmpresa.confirmada) total += 12.5
+  if (d.empresaNome) total += 14.3
+  if (d.setor || d.caracteristicas.setor) total += 14.3
+  if (d.medicoes.length > 0) total += 14.3
+  if (d.colaboradores.length > 0) total += 14.3
+  if (d.riscos.length > 0) total += 14.3
+  if (d.controles.length > 0) total += 14.3
+  if (d.parecer.texto) total += 14.3
   return Math.round(total)
 }
 
@@ -66,8 +67,10 @@ export function useLevantamentoEditor() {
   const { id } = useParams()
   const { toasts } = useApp()
   const [currentStep, setCurrentStep] = useState(0)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const hasInteracted = useRef(false)
   const storedRef = useRef<Levantamento | null>(null)
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [levantamento, setLevantamento] = useState<Levantamento>(() => {
     if (id) {
@@ -83,6 +86,38 @@ export function useLevantamentoEditor() {
     return criarRascunhoVazio()
   })
 
+  const executarSave = useCallback(async (updated: Levantamento) => {
+    setSaveStatus('saving')
+    let toSave = { ...updated }
+    try {
+      if (!toSave.codigo) {
+        try {
+          const codigo = await gerarCodigoDocumento(toSave.tipo)
+          toSave = { ...toSave, codigo }
+          setLevantamento(prev => ({ ...prev, codigo }))
+        } catch {
+          // RPC indisponivel — salva sem codigo
+        }
+      }
+
+      if (id || storedRef.current) {
+        await updateLevantamento(toSave)
+      } else {
+        await createLevantamento(toSave)
+        storedRef.current = toSave
+      }
+      setSaveStatus('saved')
+    } catch {
+      const stored = localStorage.getItem('riskflow_levantamentos')
+      const list: Levantamento[] = stored ? JSON.parse(stored) : []
+      const idx = list.findIndex(l => l.id === (id || toSave.id))
+      if (idx >= 0) list[idx] = toSave
+      else list.push(toSave)
+      localStorage.setItem('riskflow_levantamentos', JSON.stringify(list))
+      setSaveStatus('saved')
+    }
+  }, [id])
+
   const salvarRascunho = useCallback(async () => {
     const updated = { ...levantamento, updatedAt: new Date().toISOString().split('T')[0] }
     setLevantamento(updated)
@@ -95,25 +130,11 @@ export function useLevantamentoEditor() {
       return
     }
 
-    try {
-      if (id || storedRef.current) {
-        await updateLevantamento(updated)
-      } else {
-        await createLevantamento(updated)
-        storedRef.current = updated
-      }
-    } catch {
-      const stored = localStorage.getItem('riskflow_levantamentos')
-      const list: Levantamento[] = stored ? JSON.parse(stored) : []
-      const idx = list.findIndex(l => l.id === updated.id)
-      if (idx >= 0) list[idx] = updated
-      else list.push(updated)
-      localStorage.setItem('riskflow_levantamentos', JSON.stringify(list))
-    }
+    await executarSave(updated)
     if (hasInteracted.current) {
-      toasts.addToast('success', 'Rascunho salvo', 'O levantamento foi salvo automaticamente.')
+      toasts.addToast('success', 'Rascunho salvo', 'O levantamento foi salvo com sucesso.')
     }
-  }, [levantamento, id, toasts])
+  }, [levantamento, id, toasts, executarSave])
 
   const updateData = useCallback((partial: Partial<Levantamento>) => {
     hasInteracted.current = true
@@ -122,6 +143,7 @@ export function useLevantamentoEditor() {
       updated.percentual = calcularPercentual(updated)
       return updated
     })
+    setSaveStatus('idle')
   }, [])
 
   useEffect(() => {
@@ -147,6 +169,21 @@ export function useLevantamentoEditor() {
     }
   }, [id])
 
+  useEffect(() => {
+    if (!hasInteracted.current) return
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current)
+    autosaveTimer.current = setTimeout(() => {
+      const updated = { ...levantamento, updatedAt: today() }
+      const vazio = !hasDraftContent(updated)
+      if (!vazio || id || storedRef.current) {
+        executarSave(updated)
+      }
+    }, 3000)
+    return () => {
+      if (autosaveTimer.current) clearTimeout(autosaveTimer.current)
+    }
+  }, [levantamento, id, executarSave])
+
   const handleNext = useCallback(() => {
     salvarRascunho()
     setCurrentStep(s => Math.min(s + 1, 7))
@@ -157,16 +194,32 @@ export function useLevantamentoEditor() {
   }, [])
 
   const finalizar = useCallback(async () => {
-    const updated = { ...levantamento, status: STATUS_LEVANTAMENTO.CONCLUIDO, percentual: 100, updatedAt: today() }
-    setLevantamento(updated)
+    let toSave = { ...levantamento }
+
+    if (!toSave.codigo) {
+      try {
+        const codigo = await gerarCodigoDocumento(toSave.tipo)
+        toSave = { ...toSave, codigo }
+      } catch {
+        // RPC indisponivel — finaliza sem codigo
+      }
+    }
+
+    toSave = {
+      ...toSave,
+      status: STATUS_LEVANTAMENTO.CONCLUIDO,
+      percentual: 100,
+      updatedAt: today(),
+    }
+    setLevantamento(toSave)
     try {
-      await updateLevantamento(updated)
+      await updateLevantamento(toSave)
     } catch {
       const stored = localStorage.getItem('riskflow_levantamentos')
       const list: Levantamento[] = stored ? JSON.parse(stored) : []
-      const idx = list.findIndex(l => l.id === updated.id)
-      if (idx >= 0) list[idx] = updated
-      else list.push(updated)
+      const idx = list.findIndex(l => l.id === toSave.id)
+      if (idx >= 0) list[idx] = toSave
+      else list.push(toSave)
       localStorage.setItem('riskflow_levantamentos', JSON.stringify(list))
     }
   }, [levantamento])
@@ -175,6 +228,7 @@ export function useLevantamentoEditor() {
     levantamento,
     currentStep,
     progresso: levantamento.percentual,
+    saveStatus,
     handleNext,
     handleBack,
     updateData,

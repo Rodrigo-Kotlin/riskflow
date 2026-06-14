@@ -1,7 +1,6 @@
-import { LABELS_CARACTERISTICAS } from '@/constants/labels'
 import { Badge } from '@/components/ui/Badge'
 import { NIVEIS_RISCO } from '@/constants'
-import { Levantamento } from '@/types'
+import { Levantamento, ItemComQuantidade } from '@/types'
 import { formatDate } from '@/lib/utils'
 
 interface ReportPreviewProps {
@@ -9,14 +8,36 @@ interface ReportPreviewProps {
   modelo: 'Completo' | 'Executivo'
 }
 
+function parseItens(value: string): ItemComQuantidade[] {
+  try { const p = JSON.parse(value); return Array.isArray(p) ? p : [] } catch { return [] }
+}
+
+function parseList(value: string): string[] {
+  try { const p = JSON.parse(value); return Array.isArray(p) ? p : [] } catch { return [] }
+}
+
+function formatMobiliarios(value: string): string {
+  const itens = parseItens(value)
+  if (itens.length === 0) return value || '-'
+  return itens.map(i => `${i.nome} (${i.quantidade})`).join(', ')
+}
+
+function formatEquipamentos(value: string): string {
+  const itens = parseItens(value)
+  if (itens.length === 0) return value || '-'
+  return itens.map(i => `${i.nome} (${i.quantidade})`).join(', ')
+}
+
 export function ReportPreview({ levantamento, modelo }: ReportPreviewProps) {
   const l = levantamento
+  const c = l.caracteristicas || {} as Levantamento['caracteristicas']
 
   return (
     <div className="bg-white border border-border rounded-xl p-6 md:p-10 text-sm print:p-0 print:border-0">
       <div className="text-center mb-8 pb-6 border-b-2 border-brand-500">
         <h1 className="text-xl font-bold text-text-primary">Efetiva RiskFlow — LPR/AEP Digital</h1>
         <p className="text-xs text-text-secondary mt-1">Levantamento de Perigos e Riscos / Análise Ergonômica Preliminar</p>
+        {l.codigo && <p className="text-sm font-bold text-brand-500 mt-1">{l.codigo}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -26,9 +47,9 @@ export function ReportPreview({ levantamento, modelo }: ReportPreviewProps) {
             <tbody>
               <tr><td className="text-text-secondary py-1 pr-2 w-40">Empresa:</td><td className="font-medium">{l.empresaNome}</td></tr>
               <tr><td className="text-text-secondary py-1 pr-2">CNPJ:</td><td className="font-medium">{l.cnpj}</td></tr>
-              <tr><td className="text-text-secondary py-1 pr-2">Unidade:</td><td className="font-medium">{l.unidade}</td></tr>
               <tr><td className="text-text-secondary py-1 pr-2">Setor:</td><td className="font-medium">{l.setor}</td></tr>
               <tr><td className="text-text-secondary py-1 pr-2">Tipo:</td><td className="font-medium">{l.tipo}</td></tr>
+              <tr><td className="text-text-secondary py-1 pr-2">Código:</td><td className="font-medium">{l.codigo}</td></tr>
               <tr><td className="text-text-secondary py-1 pr-2">Data:</td><td className="font-medium">{formatDate(l.dataLevantamento)}</td></tr>
             </tbody>
           </table>
@@ -39,7 +60,6 @@ export function ReportPreview({ levantamento, modelo }: ReportPreviewProps) {
             <tbody>
               <tr><td className="text-text-secondary py-1 pr-2 w-40">Responsável Empresa:</td><td className="font-medium">{l.responsavelEmpresa}</td></tr>
               <tr><td className="text-text-secondary py-1 pr-2">Auditor Técnico:</td><td className="font-medium">{l.auditorTecnico}</td></tr>
-              <tr><td className="text-text-secondary py-1 pr-2">Registro:</td><td className="font-medium">{l.registroMTE}</td></tr>
             </tbody>
           </table>
         </div>
@@ -50,12 +70,28 @@ export function ReportPreview({ levantamento, modelo }: ReportPreviewProps) {
           <Section title="Características do Local">
             <table className="w-full text-xs">
               <tbody>
-                {Object.entries(l.caracteristicas).filter(([k]) => k !== 'imagens').map(([key, value]) => (
-                  <tr key={key}>
-                    <td className="text-text-secondary py-1 pr-2 w-40">{LABELS_CARACTERISTICAS[key] ?? key}:</td>
-                    <td className="font-medium">{String(value) || '-'}</td>
-                  </tr>
-                ))}
+                {c.comprimento || c.largura ? (
+                  <tr><td className="text-text-secondary py-1 pr-2 w-40">Dimensões:</td><td className="font-medium">{c.comprimento || '0'}m x {c.largura || '0'}m</td></tr>
+                ) : c.dimensoes ? (
+                  <tr><td className="text-text-secondary py-1 pr-2 w-40">Dimensões:</td><td className="font-medium">{c.dimensoes}</td></tr>
+                ) : null}
+                {c.peDireito ? <tr><td className="text-text-secondary py-1 pr-2">Pé-direito:</td><td className="font-medium">{c.peDireito}m</td></tr> : null}
+                {c.pavimento ? <tr><td className="text-text-secondary py-1 pr-2">Pavimento:</td><td className="font-medium">{c.pavimento}º</td></tr> : null}
+                {c.paredesVedacao ? <tr><td className="text-text-secondary py-1 pr-2">Paredes:</td><td className="font-medium">{c.paredesVedacao}</td></tr> : null}
+                {c.divisoria ? <tr><td className="text-text-secondary py-1 pr-2">Divisórias:</td><td className="font-medium">{c.divisoria}</td></tr> : null}
+                {c.piso ? <tr><td className="text-text-secondary py-1 pr-2">Piso:</td><td className="font-medium">{c.piso}</td></tr> : null}
+                {c.forro ? <tr><td className="text-text-secondary py-1 pr-2">Forro:</td><td className="font-medium">{c.forro}</td></tr> : null}
+                {c.telhado ? <tr><td className="text-text-secondary py-1 pr-2">Telhado:</td><td className="font-medium">{c.telhado}</td></tr> : null}
+                {c.iluminacaoNatural ? <tr><td className="text-text-secondary py-1 pr-2">Iluminação Natural:</td><td className="font-medium">{c.iluminacaoNatural}</td></tr> : null}
+                {c.iluminacaoArtificial ? <tr><td className="text-text-secondary py-1 pr-2">Iluminação Artificial:</td><td className="font-medium">{c.iluminacaoArtificial}</td></tr> : null}
+                {c.ventilacaoNatural ? <tr><td className="text-text-secondary py-1 pr-2">Ventilação Natural:</td><td className="font-medium">{c.ventilacaoNatural}</td></tr> : null}
+                {c.ventilacaoArtificial ? <tr><td className="text-text-secondary py-1 pr-2">Ventilação Artificial:</td><td className="font-medium">{c.ventilacaoArtificial}</td></tr> : null}
+                {c.qtdColaboradores ? <tr><td className="text-text-secondary py-1 pr-2">Colaboradores:</td><td className="font-medium">{c.qtdColaboradores}</td></tr> : null}
+                {c.sistemaIncendio ? <tr><td className="text-text-secondary py-1 pr-2">Sistema Incêndio:</td><td className="font-medium">{parseList(c.sistemaIncendio).join(', ') || c.sistemaIncendio}</td></tr> : null}
+                {c.mobiliarios ? <tr><td className="text-text-secondary py-1 pr-2">Mobiliários:</td><td className="font-medium">{formatMobiliarios(c.mobiliarios)}</td></tr> : null}
+                {c.maquinasEquipamentos ? <tr><td className="text-text-secondary py-1 pr-2">Equipamentos:</td><td className="font-medium">{formatEquipamentos(c.maquinasEquipamentos)}</td></tr> : null}
+                {c.epis ? <tr><td className="text-text-secondary py-1 pr-2">EPIs:</td><td className="font-medium">{c.epis}</td></tr> : null}
+                {c.epcs ? <tr><td className="text-text-secondary py-1 pr-2">EPCs:</td><td className="font-medium">{c.epcs}</td></tr> : null}
               </tbody>
             </table>
           </Section>
@@ -120,29 +156,6 @@ export function ReportPreview({ levantamento, modelo }: ReportPreviewProps) {
         <Section title="Parecer Técnico">
           <p className="text-xs text-text-primary whitespace-pre-wrap">{l.parecer.texto}</p>
           <p className="text-[10px] text-text-secondary mt-2 italic">O parecer deve ser revisado e validado por profissional legalmente habilitado antes da emissão final.</p>
-        </Section>
-      )}
-
-      {(l.assinaturaTecnico.confirmada || l.assinaturaEmpresa.confirmada) && (
-        <Section title="Assinaturas">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {l.assinaturaTecnico.confirmada && (
-              <div className="p-3 border border-border rounded-lg">
-                <p className="text-xs font-bold text-text-primary">Responsável Técnico</p>
-                <p className="text-xs">{l.assinaturaTecnico.nomeCompleto}</p>
-                <p className="text-xs text-text-secondary">CPF: {l.assinaturaTecnico.cpf}</p>
-                <p className="text-xs text-text-secondary">Data: {formatDate(l.assinaturaTecnico.dataHora)}</p>
-              </div>
-            )}
-            {l.assinaturaEmpresa.confirmada && (
-              <div className="p-3 border border-border rounded-lg">
-                <p className="text-xs font-bold text-text-primary">Representante da Empresa</p>
-                <p className="text-xs">{l.assinaturaEmpresa.nomeCompleto}</p>
-                <p className="text-xs text-text-secondary">CPF: {l.assinaturaEmpresa.cpf}</p>
-                <p className="text-xs text-text-secondary">Data: {formatDate(l.assinaturaEmpresa.dataHora)}</p>
-              </div>
-            )}
-          </div>
         </Section>
       )}
 

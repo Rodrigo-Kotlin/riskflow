@@ -4,6 +4,7 @@ import { ToastContainer } from '@/components/ui/Toast'
 import { useToast } from '@/hooks/useToast'
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 import { Usuario } from '@/types'
+import { migrateLocalCatalogsToSupabase } from '@/services/migrate-local'
 
 interface AppContextType {
   user: Usuario | null
@@ -41,6 +42,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       }
     }
   }, [user, authLoading, navigate])
+
+  useEffect(() => {
+    if (user) {
+      migrateLocalCatalogsToSupabase()
+    }
+  }, [user])
 
   return (
     <AppContext.Provider value={{ user, setUser, toasts, supabaseReady: !authLoading, signOut: handleLogout }}>

@@ -44,13 +44,13 @@ interface InputFieldProps {
 
 export function InputField({ label, required, error, children, className, inputId }: InputFieldProps) {
   return (
-    <div className={cn('space-y-1', className)}>
-      <label htmlFor={inputId} className="block text-xs font-medium text-text-primary">
+    <div className={cn('space-y-1.5', className)}>
+      <label htmlFor={inputId} className="block text-sm font-medium text-text-primary">
         {label}
         {required && <span className="text-risk-high ml-0.5">*</span>}
       </label>
       {children}
-      {error && <p className="text-[11px] text-risk-high">{error}</p>}
+      {error && <p className="text-xs text-risk-high mt-1">{error}</p>}
     </div>
   )
 }

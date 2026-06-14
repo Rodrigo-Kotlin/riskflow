@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { Levantamento } from '@/types'
 import { formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
-import { SignaturePad } from '@/components/forms/SignaturePad'
-import { CheckCircle2, AlertCircle, FileDown, FileText, FileJson, Download, Check } from 'lucide-react'
+import { CheckCircle2, AlertCircle, FileText, FileJson, Download, Check } from 'lucide-react'
 import { NIVEIS_RISCO } from '@/constants'
 
 interface Props {
@@ -13,7 +12,7 @@ interface Props {
   toasts: { addToast: (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => void }
 }
 
-export function Step08Revisao({ data, updateData, onFinish, toasts }: Props) {
+export function Step08Revisao({ data, onFinish, toasts }: Props) {
   const [showReport, setShowReport] = useState(false)
 
   const handleExportJSON = () => {
@@ -37,49 +36,9 @@ export function Step08Revisao({ data, updateData, onFinish, toasts }: Props) {
     { label: 'Riscos cadastrados', ok: data.riscos?.length > 0 },
     { label: 'Controles revisados', ok: data.controles?.length > 0 },
     { label: 'Parecer técnico revisado', ok: !!data.parecer?.texto },
-    { label: 'Assinatura do responsável técnico', ok: data.assinaturaTecnico?.confirmada },
-    { label: 'Assinatura do representante da empresa', ok: data.assinaturaEmpresa?.confirmada },
   ]
 
   const allChecked = checklist.every(i => i.ok)
-
-  const handleAssinaturaTecnico = (canvasData: string) => {
-    updateData({ assinaturaTecnico: { ...data.assinaturaTecnico, canvasData } })
-  }
-
-  const confirmAssinaturaTecnico = () => {
-    if (!data.assinaturaTecnico?.nomeCompleto || !data.assinaturaTecnico?.cpf) {
-      toasts.addToast('error', 'Erro', 'Preencha nome e CPF antes de confirmar a assinatura.')
-      return
-    }
-    updateData({
-      assinaturaTecnico: {
-        ...data.assinaturaTecnico,
-        dataHora: new Date().toISOString(),
-        confirmada: true
-      }
-    })
-    toasts.addToast('success', 'Assinatura confirmada', 'Assinatura do responsável técnico registrada.')
-  }
-
-  const handleAssinaturaEmpresa = (canvasData: string) => {
-    updateData({ assinaturaEmpresa: { ...data.assinaturaEmpresa, canvasData } })
-  }
-
-  const confirmAssinaturaEmpresa = () => {
-    if (!data.assinaturaEmpresa?.nomeCompleto || !data.assinaturaEmpresa?.cpf) {
-      toasts.addToast('error', 'Erro', 'Preencha nome e CPF antes de confirmar a assinatura.')
-      return
-    }
-    updateData({
-      assinaturaEmpresa: {
-        ...data.assinaturaEmpresa,
-        dataHora: new Date().toISOString(),
-        confirmada: true
-      }
-    })
-    toasts.addToast('success', 'Assinatura confirmada', 'Assinatura do representante da empresa registrada.')
-  }
 
   if (showReport) {
     return <ReportPreviewContent data={data} onBack={() => setShowReport(false)} />
@@ -92,8 +51,8 @@ export function Step08Revisao({ data, updateData, onFinish, toasts }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <SummaryCard label="Empresa" value={data.empresaNome} />
           <SummaryCard label="CNPJ" value={data.cnpj} />
-          <SummaryCard label="Unidade" value={data.unidade} />
           <SummaryCard label="Setor" value={data.setor} />
+          <SummaryCard label="Código" value={data.codigo} />
           <SummaryCard label="Data" value={formatDate(data.dataLevantamento)} />
           <SummaryCard label="Responsável Técnico" value={data.auditorTecnico} />
           <SummaryCard label="Ambientes" value={String(data.caracteristicas?.qtdColaboradores || 0)} />
@@ -142,106 +101,23 @@ export function Step08Revisao({ data, updateData, onFinish, toasts }: Props) {
         </div>
       </div>
 
-      <div className="border-t border-border pt-4">
-        <h4 className="text-sm font-semibold text-text-primary mb-4">Assinaturas</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <h5 className="text-xs font-semibold text-text-secondary">Responsável Técnico</h5>
-            <label htmlFor="assinatura-tecnico-nome" className="sr-only">Nome completo do responsável técnico</label>
-            <input
-              id="assinatura-tecnico-nome"
-              placeholder="Nome completo"
-              value={data.assinaturaTecnico?.nomeCompleto || ''}
-              onChange={(e) => updateData({ assinaturaTecnico: { ...data.assinaturaTecnico, nomeCompleto: e.target.value } })}
-              className="w-full h-9 px-3 rounded-lg border border-border text-sm"
-              disabled={data.assinaturaTecnico?.confirmada}
-            />
-            <label htmlFor="assinatura-tecnico-cpf" className="sr-only">CPF ou registro profissional do responsável técnico</label>
-            <input
-              id="assinatura-tecnico-cpf"
-              placeholder="CPF ou Registro Profissional"
-              value={data.assinaturaTecnico?.cpf || ''}
-              onChange={(e) => updateData({ assinaturaTecnico: { ...data.assinaturaTecnico, cpf: e.target.value } })}
-              className="w-full h-9 px-3 rounded-lg border border-border text-sm"
-              disabled={data.assinaturaTecnico?.confirmada}
-            />
-            <SignaturePad
-              value={data.assinaturaTecnico?.canvasData || ''}
-              onChange={handleAssinaturaTecnico}
-              label="Desenhe sua assinatura"
-            />
-            {data.assinaturaTecnico?.confirmada ? (
-              <div className="flex items-center gap-2 text-risk-low text-sm font-medium">
-                <Check size={16} /> Assinatura confirmada em {formatDate(data.assinaturaTecnico.dataHora)}
-              </div>
-            ) : (
-              <button onClick={confirmAssinaturaTecnico} className="w-full h-9 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
-                Confirmar Assinatura
-              </button>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            <h5 className="text-xs font-semibold text-text-secondary">Representante da Empresa</h5>
-            <label htmlFor="assinatura-empresa-nome" className="sr-only">Nome completo do representante da empresa</label>
-            <input
-              id="assinatura-empresa-nome"
-              placeholder="Nome completo"
-              value={data.assinaturaEmpresa?.nomeCompleto || ''}
-              onChange={(e) => updateData({ assinaturaEmpresa: { ...data.assinaturaEmpresa, nomeCompleto: e.target.value } })}
-              className="w-full h-9 px-3 rounded-lg border border-border text-sm"
-              disabled={data.assinaturaEmpresa?.confirmada}
-            />
-            <label htmlFor="assinatura-empresa-cpf" className="sr-only">CPF do representante da empresa</label>
-            <input
-              id="assinatura-empresa-cpf"
-              placeholder="CPF"
-              value={data.assinaturaEmpresa?.cpf || ''}
-              onChange={(e) => updateData({ assinaturaEmpresa: { ...data.assinaturaEmpresa, cpf: e.target.value } })}
-              className="w-full h-9 px-3 rounded-lg border border-border text-sm"
-              disabled={data.assinaturaEmpresa?.confirmada}
-            />
-            <SignaturePad
-              value={data.assinaturaEmpresa?.canvasData || ''}
-              onChange={handleAssinaturaEmpresa}
-              label="Desenhe sua assinatura"
-            />
-            {data.assinaturaEmpresa?.confirmada ? (
-              <div className="flex items-center gap-2 text-risk-low text-sm font-medium">
-                <Check size={16} /> Assinatura confirmada em {formatDate(data.assinaturaEmpresa.dataHora)}
-              </div>
-            ) : (
-              <button onClick={confirmAssinaturaEmpresa} className="w-full h-9 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600">
-                Confirmar Assinatura
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4 border-t border-border">
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => setShowReport(true)} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={() => setShowReport(true)} className="btn-secondary text-sm h-10">
             <FileText size={16} /> Visualizar Relatório
           </button>
-          <button onClick={() => toasts.addToast('info', 'Gerar PDF', 'Funcionalidade em desenvolvimento.')} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
-            <FileDown size={16} /> Gerar PDF
-          </button>
-          <button onClick={handleExportJSON} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={handleExportJSON} className="btn-secondary text-sm h-10">
             <FileJson size={16} /> Exportar JSON
           </button>
-          <button onClick={() => toasts.addToast('info', 'Exportar CSV', 'Funcionalidade em desenvolvimento.')} className="flex items-center gap-1 h-9 px-3 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
+          <button onClick={() => toasts.addToast('info', 'Exportar CSV', 'Funcionalidade em desenvolvimento.')} className="btn-secondary text-sm h-10">
             <Download size={16} /> Exportar CSV
           </button>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => toasts.addToast('info', 'Solicitar Revisão', 'Funcionalidade em desenvolvimento.')} className="h-9 px-4 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-gray-50">
-            Solicitar Revisão
-          </button>
           <button
             onClick={onFinish}
             disabled={!allChecked}
-            className="flex items-center gap-1 h-9 px-4 bg-risk-low text-white text-sm font-medium rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary bg-risk-low hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Check size={16} /> Finalizar Levantamento
           </button>
@@ -269,6 +145,8 @@ function agrupar<T>(arr: T[], key: keyof T): Record<string, number> {
 }
 
 function ReportPreviewContent({ data, onBack }: { data: Levantamento; onBack: () => void }) {
+  const c = data.caracteristicas || {} as Levantamento['caracteristicas']
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -279,6 +157,7 @@ function ReportPreviewContent({ data, onBack }: { data: Levantamento; onBack: ()
         <div className="text-center mb-8 pb-6 border-b-2 border-brand-500">
           <h1 className="text-xl font-bold text-text-primary">Efetiva RiskFlow — LPR/AEP Digital</h1>
           <p className="text-xs text-text-secondary mt-1">Levantamento de Perigos e Riscos / Análise Ergonômica Preliminar</p>
+          {data.codigo && <p className="text-sm font-bold text-brand-500 mt-1">{data.codigo}</p>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -288,7 +167,6 @@ function ReportPreviewContent({ data, onBack }: { data: Levantamento; onBack: ()
               <tbody>
                 <tr><td className="text-text-secondary py-1 pr-2 w-40">Empresa:</td><td className="font-medium">{data.empresaNome}</td></tr>
                 <tr><td className="text-text-secondary py-1 pr-2">CNPJ:</td><td className="font-medium">{data.cnpj}</td></tr>
-                <tr><td className="text-text-secondary py-1 pr-2">Unidade:</td><td className="font-medium">{data.unidade}</td></tr>
                 <tr><td className="text-text-secondary py-1 pr-2">Setor:</td><td className="font-medium">{data.setor}</td></tr>
                 <tr><td className="text-text-secondary py-1 pr-2">Tipo:</td><td className="font-medium">{data.tipo}</td></tr>
               </tbody>
@@ -300,10 +178,34 @@ function ReportPreviewContent({ data, onBack }: { data: Levantamento; onBack: ()
               <tbody>
                 <tr><td className="text-text-secondary py-1 pr-2 w-40">Responsável Empresa:</td><td className="font-medium">{data.responsavelEmpresa}</td></tr>
                 <tr><td className="text-text-secondary py-1 pr-2">Auditor Técnico:</td><td className="font-medium">{data.auditorTecnico}</td></tr>
-                <tr><td className="text-text-secondary py-1 pr-2">Registro:</td><td className="font-medium">{data.registroMTE}</td></tr>
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-sm font-bold mb-3 pb-1 border-b border-border">Características do Local</h3>
+          <table className="w-full text-xs">
+            <tbody>
+              {c.comprimento || c.largura ? (
+                <tr><td className="text-text-secondary py-1 pr-2 w-40">Dimensões:</td><td className="font-medium">{c.comprimento || '0'}m x {c.largura || '0'}m</td></tr>
+              ) : c.dimensoes ? (
+                <tr><td className="text-text-secondary py-1 pr-2 w-40">Dimensões:</td><td className="font-medium">{c.dimensoes}</td></tr>
+              ) : null}
+              {c.peDireito ? <tr><td className="text-text-secondary py-1 pr-2">Pé-direito:</td><td className="font-medium">{c.peDireito}m</td></tr> : null}
+              {c.pavimento ? <tr><td className="text-text-secondary py-1 pr-2">Pavimento:</td><td className="font-medium">{c.pavimento}º</td></tr> : null}
+              {c.paredesVedacao ? <tr><td className="text-text-secondary py-1 pr-2">Paredes:</td><td className="font-medium">{c.paredesVedacao}</td></tr> : null}
+              {c.piso ? <tr><td className="text-text-secondary py-1 pr-2">Piso:</td><td className="font-medium">{c.piso}</td></tr> : null}
+              {c.forro ? <tr><td className="text-text-secondary py-1 pr-2">Forro:</td><td className="font-medium">{c.forro}</td></tr> : null}
+              {c.telhado ? <tr><td className="text-text-secondary py-1 pr-2">Telhado:</td><td className="font-medium">{c.telhado}</td></tr> : null}
+              {c.divisoria ? <tr><td className="text-text-secondary py-1 pr-2">Divisórias:</td><td className="font-medium">{c.divisoria}</td></tr> : null}
+              {c.iluminacaoNatural ? <tr><td className="text-text-secondary py-1 pr-2">Iluminação Natural:</td><td className="font-medium">{c.iluminacaoNatural}</td></tr> : null}
+              {c.iluminacaoArtificial ? <tr><td className="text-text-secondary py-1 pr-2">Iluminação Artificial:</td><td className="font-medium">{c.iluminacaoArtificial}</td></tr> : null}
+              {c.ventilacaoNatural ? <tr><td className="text-text-secondary py-1 pr-2">Ventilação Natural:</td><td className="font-medium">{c.ventilacaoNatural}</td></tr> : null}
+              {c.ventilacaoArtificial ? <tr><td className="text-text-secondary py-1 pr-2">Ventilação Artificial:</td><td className="font-medium">{c.ventilacaoArtificial}</td></tr> : null}
+              {c.possibilidadeGES ? <tr><td className="text-text-secondary py-1 pr-2">Possibilidade GES:</td><td className="font-medium">{c.possibilidadeGES}</td></tr> : null}
+            </tbody>
+          </table>
         </div>
 
         <div className="mb-6">
@@ -341,6 +243,7 @@ function ReportPreviewContent({ data, onBack }: { data: Levantamento; onBack: ()
 
         <div className="text-center text-[10px] text-text-secondary mt-8 pt-4 border-t border-border">
           <p>Documento gerado pelo Efetiva RiskFlow — LPR/AEP Digital</p>
+          <p>Data de emissão: {formatDate(new Date().toISOString())}</p>
         </div>
       </div>
     </div>

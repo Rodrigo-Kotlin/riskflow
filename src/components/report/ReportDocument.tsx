@@ -127,18 +127,17 @@ export default function ReportDocument({ levantamento }: ReportDocumentProps) {
         <Text style={styles.sectionTitle}>Identificação</Text>
         <View style={styles.row}><Text style={styles.label}>Empresa:</Text><Text style={styles.value}>{l.empresaNome}</Text></View>
         <View style={styles.row}><Text style={styles.label}>CNPJ:</Text><Text style={styles.value}>{l.cnpj}</Text></View>
-        <View style={styles.row}><Text style={styles.label}>Unidade:</Text><Text style={styles.value}>{l.unidade}</Text></View>
         <View style={styles.row}><Text style={styles.label}>Setor:</Text><Text style={styles.value}>{l.setor}</Text></View>
+        <View style={styles.row}><Text style={styles.label}>Código:</Text><Text style={styles.value}>{l.codigo}</Text></View>
         <View style={styles.row}><Text style={styles.label}>Tipo:</Text><Text style={styles.value}>{l.tipo}</Text></View>
         <View style={styles.row}><Text style={styles.label}>Data:</Text><Text style={styles.value}>{formatDate(l.dataLevantamento)}</Text></View>
 
         <Text style={{ ...styles.sectionTitle, marginTop: 16 }}>Responsáveis</Text>
         <View style={styles.row}><Text style={styles.label}>Responsável Empresa:</Text><Text style={styles.value}>{l.responsavelEmpresa}</Text></View>
         <View style={styles.row}><Text style={styles.label}>Auditor Técnico:</Text><Text style={styles.value}>{l.auditorTecnico}</Text></View>
-        <View style={styles.row}><Text style={styles.label}>Registro:</Text><Text style={styles.value}>{l.registroMTE}</Text></View>
 
         <Text style={{ ...styles.sectionTitle, marginTop: 16 }}>Características do Local</Text>
-        {Object.entries(l.caracteristicas).filter(([k]) => k !== 'imagens').map(([key, value]) => (
+        {Object.entries(l.caracteristicas).filter(([k]) => k !== 'imagens' && k !== 'revestimento').map(([key, value]) => (
           <View key={key} style={styles.row}>
             <Text style={styles.label}>{LABELS_CARACTERISTICAS[key] ?? key}:</Text>
             <Text style={styles.value}>{String(value) || '-'}</Text>
@@ -189,30 +188,6 @@ export default function ReportDocument({ levantamento }: ReportDocumentProps) {
           <>
             <Text style={{ ...styles.sectionTitle, marginTop: 16 }}>Parecer Técnico</Text>
             <Text style={styles.parecerText}>{l.parecer.texto}</Text>
-          </>
-        )}
-
-        {(l.assinaturaTecnico.confirmada || l.assinaturaEmpresa.confirmada) && (
-          <>
-            <Text style={{ ...styles.sectionTitle, marginTop: 16 }}>Assinaturas</Text>
-            <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-              {l.assinaturaTecnico.confirmada && (
-                <View style={{ ...styles.signatureBox, flex: 1 }}>
-                  <Text style={styles.signatureLabel}>Responsável Técnico</Text>
-                  <Text style={styles.signatureText}>{l.assinaturaTecnico.nomeCompleto}</Text>
-                  <Text style={styles.signatureText}>CPF: {l.assinaturaTecnico.cpf}</Text>
-                  <Text style={styles.signatureText}>Data: {formatDate(l.assinaturaTecnico.dataHora)}</Text>
-                </View>
-              )}
-              {l.assinaturaEmpresa.confirmada && (
-                <View style={{ ...styles.signatureBox, flex: 1 }}>
-                  <Text style={styles.signatureLabel}>Representante da Empresa</Text>
-                  <Text style={styles.signatureText}>{l.assinaturaEmpresa.nomeCompleto}</Text>
-                  <Text style={styles.signatureText}>CPF: {l.assinaturaEmpresa.cpf}</Text>
-                  <Text style={styles.signatureText}>Data: {formatDate(l.assinaturaEmpresa.dataHora)}</Text>
-                </View>
-              )}
-            </View>
           </>
         )}
 
