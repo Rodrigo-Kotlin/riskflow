@@ -127,14 +127,12 @@ export default function ReportDocument({ levantamento }: ReportDocumentProps) {
         <Text style={styles.sectionTitle}>Identificação</Text>
         <View style={styles.row}><Text style={styles.label}>Empresa:</Text><Text style={styles.value}>{l.empresaNome}</Text></View>
         <View style={styles.row}><Text style={styles.label}>CNPJ:</Text><Text style={styles.value}>{l.cnpj}</Text></View>
-        <View style={styles.row}><Text style={styles.label}>Setor:</Text><Text style={styles.value}>{l.setor}</Text></View>
         <View style={styles.row}><Text style={styles.label}>Código:</Text><Text style={styles.value}>{l.codigo}</Text></View>
         <View style={styles.row}><Text style={styles.label}>Tipo:</Text><Text style={styles.value}>{l.tipo}</Text></View>
         <View style={styles.row}><Text style={styles.label}>Data:</Text><Text style={styles.value}>{formatDate(l.dataLevantamento)}</Text></View>
 
         <Text style={{ ...styles.sectionTitle, marginTop: 16 }}>Responsáveis</Text>
         <View style={styles.row}><Text style={styles.label}>Responsável Empresa:</Text><Text style={styles.value}>{l.responsavelEmpresa}</Text></View>
-        <View style={styles.row}><Text style={styles.label}>Auditor Técnico:</Text><Text style={styles.value}>{l.auditorTecnico}</Text></View>
 
         <Text style={{ ...styles.sectionTitle, marginTop: 16 }}>Características do Local</Text>
         {Object.entries(l.caracteristicas).filter(([k]) => k !== 'imagens' && k !== 'revestimento').map(([key, value]) => (

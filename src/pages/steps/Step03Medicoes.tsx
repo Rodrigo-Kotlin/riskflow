@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Medicao, Levantamento } from '@/types'
 import { generateId } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
@@ -45,6 +45,32 @@ export function Step03Medicoes({ data, updateData }: Props) {
     }
     setModalOpen(false)
   }
+
+  const formatMedDisplay = useCallback((val: number) => {
+    if (val === 0) return ''
+    return val.toFixed(1).replace('.', ',')
+  }, [])
+
+  const handleMedInput = useCallback((field: keyof Medicao) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    let v = e.target.value.replace(/[^\d,]/g, '')
+    const parts = v.split(',')
+    if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('')
+    if (v === '' || v === ',') {
+      setForm((prev: Medicao) => ({ ...prev, [field]: 0 }))
+      return
+    }
+    const num = parseFloat(v.replace(',', '.'))
+    setForm((prev: Medicao) => ({ ...prev, [field]: isNaN(num) ? 0 : num }))
+  }, [])
+
+  const handleMedBlur = useCallback((field: keyof Medicao) => () => {
+    setForm((prev: Medicao) => {
+      const val = prev[field] as number
+      if (val === 0) return prev
+      const formatted = parseFloat(val.toFixed(1))
+      return { ...prev, [field]: formatted }
+    })
+  }, [])
 
   const remove = (id: string) => {
     updateData({ medicoes: medicoes.filter((m: Medicao) => m.id !== id) })
@@ -126,12 +152,12 @@ export function Step03Medicoes({ data, updateData }: Props) {
           <InputField label="Posto/Local Avaliado" required className="md:col-span-2" inputId="medicao-postoLocal">
             <input id="medicao-postoLocal" value={form.postoLocal} onChange={(e) => setForm({ ...form, postoLocal: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" />
           </InputField>
-          <InputField label="Ruído dB(A)" inputId="medicao-ruidoDbA"><input id="medicao-ruidoDbA" type="number" value={form.ruidoDbA} onChange={(e) => setForm({ ...form, ruidoDbA: Number(e.target.value) })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
+          <InputField label="Ruído dB(A)" inputId="medicao-ruidoDbA"><input id="medicao-ruidoDbA" type="text" inputMode="decimal" value={formatMedDisplay(form.ruidoDbA)} onChange={handleMedInput('ruidoDbA')} onBlur={handleMedBlur('ruidoDbA')} placeholder="0,0" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Tempo de Exposição" inputId="medicao-tempoExposicao"><input id="medicao-tempoExposicao" value={form.tempoExposicao} onChange={(e) => setForm({ ...form, tempoExposicao: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
-          <InputField label="Iluminância (lux)" inputId="medicao-iluminanciaLux"><input id="medicao-iluminanciaLux" type="number" value={form.iluminanciaLux} onChange={(e) => setForm({ ...form, iluminanciaLux: Number(e.target.value) })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
-          <InputField label="Temperatura (°C)" inputId="medicao-temperatura"><input id="medicao-temperatura" type="number" value={form.temperatura} onChange={(e) => setForm({ ...form, temperatura: Number(e.target.value) })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
-          <InputField label="Umidade (%)" inputId="medicao-umidade"><input id="medicao-umidade" type="number" value={form.umidade} onChange={(e) => setForm({ ...form, umidade: Number(e.target.value) })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
-          <InputField label="Velocidade do Ar (m/s)" inputId="medicao-velocidadeAr"><input id="medicao-velocidadeAr" type="number" value={form.velocidadeAr} onChange={(e) => setForm({ ...form, velocidadeAr: Number(e.target.value) })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
+          <InputField label="Iluminância (lux)" inputId="medicao-iluminanciaLux"><input id="medicao-iluminanciaLux" type="text" inputMode="decimal" value={formatMedDisplay(form.iluminanciaLux)} onChange={handleMedInput('iluminanciaLux')} onBlur={handleMedBlur('iluminanciaLux')} placeholder="0,0" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
+          <InputField label="Temperatura (°C)" inputId="medicao-temperatura"><input id="medicao-temperatura" type="text" inputMode="decimal" value={formatMedDisplay(form.temperatura)} onChange={handleMedInput('temperatura')} onBlur={handleMedBlur('temperatura')} placeholder="0,0" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
+          <InputField label="Umidade (%)" inputId="medicao-umidade"><input id="medicao-umidade" type="text" inputMode="decimal" value={formatMedDisplay(form.umidade)} onChange={handleMedInput('umidade')} onBlur={handleMedBlur('umidade')} placeholder="0,0" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
+          <InputField label="Velocidade do Ar (m/s)" inputId="medicao-velocidadeAr"><input id="medicao-velocidadeAr" type="text" inputMode="decimal" value={formatMedDisplay(form.velocidadeAr)} onChange={handleMedInput('velocidadeAr')} onBlur={handleMedBlur('velocidadeAr')} placeholder="0,0" className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Radiação" inputId="medicao-radiacao"><input id="medicao-radiacao" value={form.radiacao} onChange={(e) => setForm({ ...form, radiacao: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Equipamento" inputId="medicao-equipamento"><input id="medicao-equipamento" value={form.equipamento} onChange={(e) => setForm({ ...form, equipamento: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>
           <InputField label="Data/Hora" inputId="medicao-dataHora"><input id="medicao-dataHora" type="datetime-local" value={form.dataHora} onChange={(e) => setForm({ ...form, dataHora: e.target.value })} className="w-full h-9 px-3 rounded-lg border border-border text-sm" /></InputField>

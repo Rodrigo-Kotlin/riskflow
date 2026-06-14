@@ -1,5 +1,4 @@
 export const LABELS_CARACTERISTICAS: Record<string, string> = {
-  setor: 'Setor',
   qtdColaboradores: 'Quantidade de Colaboradores',
   dimensoes: 'Dimensões',
   comprimento: 'Comprimento',

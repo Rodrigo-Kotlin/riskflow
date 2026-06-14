@@ -30,8 +30,8 @@ export function Step08Revisao({ data, onFinish, toasts }: Props) {
   const riscosPorNivel = agrupar(data.riscos, 'nivel')
 
   const checklist = [
-    { label: 'Dados gerais preenchidos', ok: !!data.empresaNome && !!data.setor },
-    { label: 'Características do local preenchidas', ok: !!data.caracteristicas?.setor },
+    { label: 'Dados gerais preenchidos', ok: !!data.empresaNome },
+    { label: 'Características do local preenchidas', ok: Object.keys(data.caracteristicas || {}).length > 0 },
     { label: 'Medições revisadas', ok: data.medicoes?.length > 0 },
     { label: 'Riscos cadastrados', ok: data.riscos?.length > 0 },
     { label: 'Controles revisados', ok: data.controles?.length > 0 },
@@ -51,10 +51,8 @@ export function Step08Revisao({ data, onFinish, toasts }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <SummaryCard label="Empresa" value={data.empresaNome} />
           <SummaryCard label="CNPJ" value={data.cnpj} />
-          <SummaryCard label="Setor" value={data.setor} />
           <SummaryCard label="Código" value={data.codigo} />
           <SummaryCard label="Data" value={formatDate(data.dataLevantamento)} />
-          <SummaryCard label="Responsável Técnico" value={data.auditorTecnico} />
           <SummaryCard label="Ambientes" value={String(data.caracteristicas?.qtdColaboradores || 0)} />
           <SummaryCard label="Medições" value={String(data.medicoes?.length || 0)} />
         </div>
@@ -167,7 +165,6 @@ function ReportPreviewContent({ data, onBack }: { data: Levantamento; onBack: ()
               <tbody>
                 <tr><td className="text-text-secondary py-1 pr-2 w-40">Empresa:</td><td className="font-medium">{data.empresaNome}</td></tr>
                 <tr><td className="text-text-secondary py-1 pr-2">CNPJ:</td><td className="font-medium">{data.cnpj}</td></tr>
-                <tr><td className="text-text-secondary py-1 pr-2">Setor:</td><td className="font-medium">{data.setor}</td></tr>
                 <tr><td className="text-text-secondary py-1 pr-2">Tipo:</td><td className="font-medium">{data.tipo}</td></tr>
               </tbody>
             </table>
@@ -177,7 +174,6 @@ function ReportPreviewContent({ data, onBack }: { data: Levantamento; onBack: ()
             <table className="w-full text-xs">
               <tbody>
                 <tr><td className="text-text-secondary py-1 pr-2 w-40">Responsável Empresa:</td><td className="font-medium">{data.responsavelEmpresa}</td></tr>
-                <tr><td className="text-text-secondary py-1 pr-2">Auditor Técnico:</td><td className="font-medium">{data.auditorTecnico}</td></tr>
               </tbody>
             </table>
           </div>

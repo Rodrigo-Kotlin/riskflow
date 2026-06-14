@@ -14,12 +14,12 @@ function criarRascunhoVazio(): Levantamento {
     id: generateId(),
     tipo: 'LPR',
     codigo: '',
-    empresaId: '', empresaNome: '', cnpj: '', unidade: '', setor: '',
-    responsavelEmpresa: '', auditorTecnico: '', registroMTE: '',
+    empresaId: '', empresaNome: '', cnpj: '', unidade: '',
+    responsavelEmpresa: '', registroMTE: '',
     dataLevantamento: today(), dataLancamentoSGG: '', responsavelLancamento: '',
     status: STATUS_LEVANTAMENTO.RASCUNHO, percentual: 0,
     caracteristicas: {
-      setor: '', qtdColaboradores: 0, dimensoes: '', comprimento: '', largura: '',
+      qtdColaboradores: 0, dimensoes: '', comprimento: '', largura: '',
       peDireito: '', pavimento: '',
       paredesVedacao: '', divisoria: '', piso: '', revestimento: '', forro: '',
       telhado: '', iluminacaoNatural: '', iluminacaoArtificial: '', ventilacaoNatural: '',
@@ -38,10 +38,7 @@ function hasDraftContent(d: Levantamento): boolean {
   return !!(
     d.empresaNome?.trim() ||
     d.cnpj?.trim() ||
-    d.setor?.trim() ||
     d.responsavelEmpresa?.trim() ||
-    d.auditorTecnico?.trim() ||
-    d.caracteristicas?.setor?.trim() ||
     (d.caracteristicas?.qtdColaboradores ?? 0) > 0 ||
     d.medicoes.length > 0 ||
     d.colaboradores.length > 0 ||
@@ -53,9 +50,8 @@ function hasDraftContent(d: Levantamento): boolean {
 
 function calcularPercentual(d: Levantamento): number {
   let total = 0
-  if (d.empresaNome) total += 14.3
-  if (d.setor || d.caracteristicas.setor) total += 14.3
-  if (d.medicoes.length > 0) total += 14.3
+  if (d.empresaNome) total += 16.7
+  if (d.medicoes.length > 0) total += 16.7
   if (d.colaboradores.length > 0) total += 14.3
   if (d.riscos.length > 0) total += 14.3
   if (d.controles.length > 0) total += 14.3

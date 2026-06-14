@@ -88,19 +88,16 @@ export function NovoLevantamento() {
         {renderStep()}
       </div>
 
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          {currentStep > 0 && (
-            <button onClick={handleBack} className="btn-secondary">
-              <ArrowLeft size={16} /> Anterior
-            </button>
-          )}
-          <SaveStatusIndicator status={saveStatus} />
-        </div>
-        <div className="flex items-center gap-3">
-          <button onClick={salvarRascunho} className="btn-secondary">
-            <Save size={16} /> Salvar Rascunho
-          </button>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            {currentStep > 0 && (
+              <button onClick={handleBack} className="btn-secondary">
+                <ArrowLeft size={16} /> Anterior
+              </button>
+            )}
+            <SaveStatusIndicator status={saveStatus} />
+          </div>
           {currentStep < steps.length - 1 ? (
             <button onClick={onNext} className="btn-primary">
               Próxima Etapa <ArrowRight size={16} />
@@ -110,6 +107,11 @@ export function NovoLevantamento() {
               <Check size={16} /> Finalizar Levantamento
             </button>
           )}
+        </div>
+        <div className="flex justify-center">
+          <button onClick={salvarRascunho} className="btn-secondary">
+            <Save size={16} /> Salvar Rascunho
+          </button>
         </div>
       </div>
       <ConfirmDialog

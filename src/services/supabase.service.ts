@@ -235,7 +235,7 @@ function mapEmpresaFromSupabase(data: SupabaseEmpresa): Empresa {
 }
 
 interface SupabaseLevantamento {
-  id: string; tipo: Levantamento['tipo']; codigo?: string; empresa_id?: string; empresa_nome?: string; cnpj?: string; unidade?: string; setor?: string; responsavel_empresa?: string; auditor_tecnico?: string; registro_mte?: string; data_levantamento?: string; data_lancamento_sgg?: string; responsavel_lancamento?: string; status: Levantamento['status']; percentual?: number; caracteristicas?: Levantamento['caracteristicas']; medicoes?: Levantamento['medicoes']; colaboradores?: Levantamento['colaboradores']; riscos?: Levantamento['riscos']; controles?: Levantamento['controles']; parecer?: Levantamento['parecer']; assinatura_tecnico?: Levantamento['assinaturaTecnico']; assinatura_empresa?: Levantamento['assinaturaEmpresa']; created_at?: string; updated_at?: string;
+  id: string; tipo: Levantamento['tipo']; codigo?: string; empresa_id?: string; empresa_nome?: string; cnpj?: string; unidade?: string; responsavel_empresa?: string; registro_mte?: string; data_levantamento?: string; data_lancamento_sgg?: string; responsavel_lancamento?: string; status: Levantamento['status']; percentual?: number; caracteristicas?: Levantamento['caracteristicas']; medicoes?: Levantamento['medicoes']; colaboradores?: Levantamento['colaboradores']; riscos?: Levantamento['riscos']; controles?: Levantamento['controles']; parecer?: Levantamento['parecer']; assinatura_tecnico?: Levantamento['assinaturaTecnico']; assinatura_empresa?: Levantamento['assinaturaEmpresa']; created_at?: string; updated_at?: string;
 }
 
 function mapLevantamentoFromSupabase(data: SupabaseLevantamento): Levantamento {
@@ -247,9 +247,7 @@ function mapLevantamentoFromSupabase(data: SupabaseLevantamento): Levantamento {
     empresaNome: data.empresa_nome || '',
     cnpj: data.cnpj || '',
     unidade: data.unidade || '',
-    setor: data.setor || '',
     responsavelEmpresa: data.responsavel_empresa || '',
-    auditorTecnico: data.auditor_tecnico || '',
     registroMTE: data.registro_mte || '',
     dataLevantamento: data.data_levantamento || '',
     dataLancamentoSGG: data.data_lancamento_sgg || '',
@@ -278,9 +276,7 @@ function toSnakeCase(l: Levantamento): Record<string, unknown> {
     empresa_nome: l.empresaNome,
     cnpj: l.cnpj,
     unidade: l.unidade,
-    setor: l.setor,
     responsavel_empresa: l.responsavelEmpresa,
-    auditor_tecnico: l.auditorTecnico,
     registro_mte: l.registroMTE,
     data_levantamento: l.dataLevantamento || null,
     data_lancamento_sgg: l.dataLancamentoSGG,

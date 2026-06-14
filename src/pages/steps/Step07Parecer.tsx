@@ -23,12 +23,10 @@ export function Step07Parecer({ data, updateData, toasts }: Props) {
 
 Empresa: ${data.empresaNome}
 CNPJ: ${data.cnpj}
-Setor: ${data.setor}
 Data do levantamento: ${data.dataLevantamento}
-Responsável técnico: ${data.auditorTecnico}
 
 1. OBJETIVO
-Realizar o Levantamento de Perigos e Riscos (LPR) no setor ${data.setor} da empresa ${data.empresaNome}, conforme requisitos legais aplicáveis e normas regulamentadoras.
+Realizar o Levantamento de Perigos e Riscos (LPR) na empresa ${data.empresaNome}, conforme requisitos legais aplicáveis e normas regulamentadoras.
 
 2. METODOLOGIA
 Foram realizadas visitas técnicas, inspeções de segurança, entrevistas com colaboradores, medições ambientais e análise documental. A avaliação dos riscos foi realizada com base na metodologia de Severidade x Probabilidade.
@@ -55,11 +53,11 @@ Foram propostas ${data.controles?.length || 0} medidas de controle, organizadas 
 ${riscosCriticos.length > 0 || riscosAltos.length > 0 ? 'Recomenda-se a realização de avaliação quantitativa complementar para os riscos classificados como Altos e Críticos, além da elaboração ou revisão do PGR e PCMSO, quando aplicável.' : 'Os riscos identificados encontram-se em níveis aceitáveis ou com controles adequados. Recomenda-se a manutenção dos controles existentes e monitoramento periódico.'}
 
 8. CONCLUSÃO
-Com base na análise técnica realizada, conclui-se que o setor ${data.setor} da empresa ${data.empresaNome} apresenta riscos ocupacionais que exigem ações de controle e monitoramento. Recomenda-se a implementação do plano de ação proposto e a revisão periódica deste levantamento.
+Com base na análise técnica realizada, conclui-se que a empresa ${data.empresaNome} apresenta riscos ocupacionais que exigem ações de controle e monitoramento. Recomenda-se a implementação do plano de ação proposto e a revisão periódica deste levantamento.
 
 Este parecer foi gerado automaticamente pelo sistema Efetiva RiskFlow e deve ser revisado e validado por profissional legalmente habilitado antes da emissão final.
 
-${data.auditorTecnico || 'Profissional Responsável'}`
+Profissional Responsável`
 
     updateData({ parecer: { texto, editado: false } })
     toasts.addToast('success', 'Parecer gerado', 'O parecer técnico automático foi gerado com sucesso.')
