@@ -1,9 +1,10 @@
-import { forwardRef, useImperativeHandle, useMemo, useState, useCallback } from 'react'
+import { forwardRef, useImperativeHandle, useMemo, useState, useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FormSection, InputField } from '@/components/forms/FormSection'
-import { Levantamento, CaracteristicasLocal, ItemComQuantidade } from '@/types'
+import { Levantamento, CaracteristicasLocal, ItemComQuantidade, BibliotecaTecnicaItem } from '@/types'
+import { buscarItensBiblioteca } from '@/services/biblioteca-tecnica.service'
 import { Plus, X, Minus } from 'lucide-react'
 
 const OPCOES_PAREDES = ['Alvenaria', 'Drywall', 'Divisória de Vidro', 'Divisória Naval', 'Madeira']
@@ -36,6 +37,17 @@ function parseItensComQuantidade(value: string): ItemComQuantidade[] {
   }
 }
 
+function parseListOrText(value: string): { items: string[]; legacyText?: string } {
+  if (!value) return { items: [] }
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed)) return { items: parsed }
+  } catch {
+    // not JSON — legacy plain text
+  }
+  return { items: [], legacyText: value }
+}
+
 const stepSchema = z.object({
   qtdColaboradores: z.string().min(1, 'Informe ao menos 1 colaborador'),
   comprimento: z.string().optional(),
@@ -44,8 +56,6 @@ const stepSchema = z.object({
   iluminacaoNatural: z.string().optional(),
   ventilacaoNatural: z.string().optional(),
   possibilidadeGES: z.string().optional(),
-  epis: z.string().optional(),
-  epcs: z.string().optional(),
 })
 
 type StepForm = z.infer<typeof stepSchema>
@@ -73,8 +83,6 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
         iluminacaoNatural: c.iluminacaoNatural || '',
         ventilacaoNatural: c.ventilacaoNatural || '',
         possibilidadeGES: c.possibilidadeGES || '',
-        epis: c.epis || '',
-        epcs: c.epcs || '',
       },
     })
 
@@ -84,7 +92,52 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
     const [novoMobiliario, setNovoMobiliario] = useState('')
     const [novoEquipamento, setNovoEquipamento] = useState('')
 
+    const parsedEpi = useMemo(() => parseListOrText(c.epis), [c.epis])
+    const parsedEpc = useMemo(() => parseListOrText(c.epcs), [c.epcs])
+    const [epiItems, setEpiItems] = useState<string[]>(() => parsedEpi.items)
+    const [epcItems, setEpcItems] = useState<string[]>(() => parsedEpc.items)
+    const [epiLegacy, setEpiLegacy] = useState<string | undefined>(() => parsedEpi.legacyText)
+    const [epcLegacy, setEpcLegacy] = useState<string | undefined>(() => parsedEpc.legacyText)
+    const [epiLibrary, setEpiLibrary] = useState<BibliotecaTecnicaItem[]>([])
+    const [epcLibrary, setEpcLibrary] = useState<BibliotecaTecnicaItem[]>([])
+    const [epiLibraryLoading, setEpiLibraryLoading] = useState(false)
+    const [epcLibraryLoading, setEpcLibraryLoading] = useState(false)
+    const [customEpi, setCustomEpi] = useState('')
+    const [customEpc, setCustomEpc] = useState('')
+
     useImperativeHandle(ref, () => ({ trigger }), [trigger])
+
+    useEffect(() => {
+      let cancelled = false
+      ;(async () => {
+        setEpiLibraryLoading(true)
+        try {
+          const items = await buscarItensBiblioteca('epi')
+          if (!cancelled) setEpiLibrary(items)
+        } catch {
+          // fallback silencioso
+        } finally {
+          if (!cancelled) setEpiLibraryLoading(false)
+        }
+      })()
+      return () => { cancelled = true }
+    }, [])
+
+    useEffect(() => {
+      let cancelled = false
+      ;(async () => {
+        setEpcLibraryLoading(true)
+        try {
+          const items = await buscarItensBiblioteca('epc')
+          if (!cancelled) setEpcLibrary(items)
+        } catch {
+          // fallback silencioso
+        } finally {
+          if (!cancelled) setEpcLibraryLoading(false)
+        }
+      })()
+      return () => { cancelled = true }
+    }, [])
 
     const formatarDecimal = useCallback((raw: string) => {
       let v = raw.replace(/[^\d,]/g, '')
@@ -115,6 +168,48 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
         qtdColaboradores: Number(values.qtdColaboradores) || 0,
       })
     }, [getValues, updateData, data])
+
+    const syncEpiData = useCallback((items: string[], legacy?: string) => {
+      const json = JSON.stringify(items)
+      syncCaracteristicas(updateData, data, { epis: json })
+      setEpiItems(items)
+      setEpiLegacy(legacy)
+    }, [updateData, data])
+
+    const syncEpcData = useCallback((items: string[], legacy?: string) => {
+      const json = JSON.stringify(items)
+      syncCaracteristicas(updateData, data, { epcs: json })
+      setEpcItems(items)
+      setEpcLegacy(legacy)
+    }, [updateData, data])
+
+    const toggleEpi = (nome: string) => {
+      const nova = epiItems.includes(nome)
+        ? epiItems.filter(i => i !== nome)
+        : [...epiItems, nome]
+      syncEpiData(nova)
+    }
+
+    const toggleEpc = (nome: string) => {
+      const nova = epcItems.includes(nome)
+        ? epcItems.filter(i => i !== nome)
+        : [...epcItems, nome]
+      syncEpcData(nova)
+    }
+
+    const adicionarCustomEpi = () => {
+      const nome = customEpi.trim()
+      if (!nome || epiItems.includes(nome)) return
+      syncEpiData([...epiItems, nome])
+      setCustomEpi('')
+    }
+
+    const adicionarCustomEpc = () => {
+      const nome = customEpc.trim()
+      if (!nome || epcItems.includes(nome)) return
+      syncEpcData([...epcItems, nome])
+      setCustomEpc('')
+    }
 
     const toggleSistemaIncendio = (item: string) => {
       const nova = sistemaIncendio.includes(item)
@@ -448,14 +543,122 @@ export const Step02Caracteristicas = forwardRef<{ trigger: () => Promise<boolean
               </InputField>
             </div>
 
-            <InputField label="EPIs Encontrados (com CA)" inputId="caracteristicas-epis">
-              <textarea id="caracteristicas-epis" {...register('epis')} onBlur={syncCampos} rows={2}
-                className="input-base resize-y min-h-[2.75rem]" />
-            </InputField>
-            <InputField label="EPCs Encontrados" inputId="caracteristicas-epcs">
-              <textarea id="caracteristicas-epcs" {...register('epcs')} onBlur={syncCampos} rows={2}
-                className="input-base resize-y min-h-[2.75rem]" />
-            </InputField>
+            <div className="md:col-span-2">
+              <InputField label="EPIs Encontrados (com CA)" inputId="caracteristicas-epis">
+                {epiLibraryLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-text-secondary py-2">
+                    <div className="animate-spin h-4 w-4 border-2 border-brand-500 border-t-transparent rounded-full" />
+                    Carregando EPIs da biblioteca...
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {epiLibrary.map(item => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => toggleEpi(item.nome)}
+                        className={`px-3 h-8 text-xs font-medium rounded-lg border transition-colors ${
+                          epiItems.includes(item.nome)
+                            ? 'bg-brand-500 text-white border-brand-500'
+                            : 'bg-white text-text-secondary border-border hover:border-brand-300'
+                        }`}
+                      >
+                        {epiItems.includes(item.nome) && <X size={12} className="inline mr-1" />}
+                        {item.nome}
+                      </button>
+                    ))}
+                    {epiLibrary.length === 0 && (
+                      <p className="text-xs text-text-secondary">Nenhum EPI encontrado na biblioteca técnica.</p>
+                    )}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    value={customEpi}
+                    onChange={(e) => setCustomEpi(e.target.value)}
+                    placeholder="Adicionar EPI personalizado..."
+                    className="input-base flex-1 text-sm"
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); adicionarCustomEpi() } }}
+                  />
+                  <button type="button" onClick={adicionarCustomEpi} className="h-11 px-3 bg-brand-500 text-white text-xs font-medium rounded-lg hover:bg-brand-600" aria-label="Adicionar EPI">
+                    <Plus size={16} />
+                  </button>
+                </div>
+                {epiItems.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {epiItems.map(item => (
+                      <span key={item} className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-50 text-brand-700 text-xs font-medium rounded-full border border-brand-200">
+                        {item}
+                        <button type="button" onClick={() => toggleEpi(item)} className="hover:text-risk-high" aria-label={`Remover ${item}`}>
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {epiLegacy && epiItems.length === 0 && (
+                  <p className="text-xs text-risk-moderate mt-1">Dados legados: {epiLegacy}</p>
+                )}
+              </InputField>
+            </div>
+            <div className="md:col-span-2">
+              <InputField label="EPCs Encontrados" inputId="caracteristicas-epcs">
+                {epcLibraryLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-text-secondary py-2">
+                    <div className="animate-spin h-4 w-4 border-2 border-brand-500 border-t-transparent rounded-full" />
+                    Carregando EPCs da biblioteca...
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {epcLibrary.map(item => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => toggleEpc(item.nome)}
+                        className={`px-3 h-8 text-xs font-medium rounded-lg border transition-colors ${
+                          epcItems.includes(item.nome)
+                            ? 'bg-brand-500 text-white border-brand-500'
+                            : 'bg-white text-text-secondary border-border hover:border-brand-300'
+                        }`}
+                      >
+                        {epcItems.includes(item.nome) && <X size={12} className="inline mr-1" />}
+                        {item.nome}
+                      </button>
+                    ))}
+                    {epcLibrary.length === 0 && (
+                      <p className="text-xs text-text-secondary">Nenhum EPC encontrado na biblioteca técnica.</p>
+                    )}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    value={customEpc}
+                    onChange={(e) => setCustomEpc(e.target.value)}
+                    placeholder="Adicionar EPC personalizado..."
+                    className="input-base flex-1 text-sm"
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); adicionarCustomEpc() } }}
+                  />
+                  <button type="button" onClick={adicionarCustomEpc} className="h-11 px-3 bg-brand-500 text-white text-xs font-medium rounded-lg hover:bg-brand-600" aria-label="Adicionar EPC">
+                    <Plus size={16} />
+                  </button>
+                </div>
+                {epcItems.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {epcItems.map(item => (
+                      <span key={item} className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-50 text-brand-700 text-xs font-medium rounded-full border border-brand-200">
+                        {item}
+                        <button type="button" onClick={() => toggleEpc(item)} className="hover:text-risk-high" aria-label={`Remover ${item}`}>
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {epcLegacy && epcItems.length === 0 && (
+                  <p className="text-xs text-risk-moderate mt-1">Dados legados: {epcLegacy}</p>
+                )}
+              </InputField>
+            </div>
           </div>
         </FormSection>
 
