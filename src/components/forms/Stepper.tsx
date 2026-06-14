@@ -16,9 +16,12 @@ export function Stepper({ steps, currentStep, percentual }: StepperProps) {
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-text-primary">
-          Etapa {currentStep + 1} de {steps.length}
-        </span>
+        <div className="flex flex-col">
+          <span className="text-sm font-medium text-text-primary">
+            Etapa {currentStep + 1} de {steps.length}
+          </span>
+          <span className="text-xs text-text-secondary md:hidden">{steps[currentStep]?.label}</span>
+        </div>
         <span className="text-sm font-medium text-brand-500">{percentual}% concluído</span>
       </div>
       <div className="w-full h-2 bg-gray-200 rounded-full mb-4">

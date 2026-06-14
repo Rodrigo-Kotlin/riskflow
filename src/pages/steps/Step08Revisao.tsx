@@ -3,17 +3,16 @@ import { Levantamento } from '@/types'
 import { formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
 import { ReportPreview } from '@/components/report/ReportPreview'
-import { CheckCircle2, AlertCircle, FileText, FileJson, Download, Check } from 'lucide-react'
+import { CheckCircle2, AlertCircle, FileText, FileJson, Download } from 'lucide-react'
 import { NIVEIS_RISCO } from '@/constants'
 
 interface Props {
   data: Levantamento
   updateData: (partial: Partial<Levantamento>) => void
-  onFinish: () => void
   toasts: { addToast: (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => void }
 }
 
-export function Step08Revisao({ data, onFinish, toasts }: Props) {
+export function Step08Revisao({ data, toasts }: Props) {
   const [showReport, setShowReport] = useState(false)
 
   const handleExportJSON = () => {
@@ -38,8 +37,6 @@ export function Step08Revisao({ data, onFinish, toasts }: Props) {
     { label: 'Controles revisados', ok: data.controles?.length > 0 },
     { label: 'Parecer técnico revisado', ok: !!data.parecer?.texto },
   ]
-
-  const allChecked = checklist.every(i => i.ok)
 
   if (showReport) {
     return (
@@ -108,27 +105,16 @@ export function Step08Revisao({ data, onFinish, toasts }: Props) {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4 border-t border-border">
-        <div className="flex flex-wrap gap-2">
-          <button onClick={() => setShowReport(true)} className="btn-secondary text-sm h-10">
-            <FileText size={16} /> Visualizar Relatório
-          </button>
-          <button onClick={handleExportJSON} className="btn-secondary text-sm h-10">
-            <FileJson size={16} /> Exportar JSON
-          </button>
-          <button onClick={() => toasts.addToast('info', 'Exportar CSV', 'Funcionalidade em desenvolvimento.')} className="btn-secondary text-sm h-10">
-            <Download size={16} /> Exportar CSV
-          </button>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={onFinish}
-            disabled={!allChecked}
-            className="btn-primary bg-risk-low hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Check size={16} /> Finalizar Levantamento
-          </button>
-        </div>
+      <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
+        <button onClick={() => setShowReport(true)} className="btn-secondary text-sm h-10">
+          <FileText size={16} /> Visualizar Relatório
+        </button>
+        <button onClick={handleExportJSON} className="btn-secondary text-sm h-10">
+          <FileJson size={16} /> Exportar JSON
+        </button>
+        <button onClick={() => toasts.addToast('info', 'Exportar CSV', 'Funcionalidade em desenvolvimento.')} className="btn-secondary text-sm h-10">
+          <Download size={16} /> Exportar CSV
+        </button>
       </div>
     </div>
   )

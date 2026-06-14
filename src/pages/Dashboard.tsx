@@ -82,7 +82,7 @@ export function Dashboard() {
             <StatCard icon={FileSearch} label="Em revisão" value={emRevisao} variant="warning" onClick={() => navigate('/levantamentos')} />
             <StatCard icon={AlertTriangle} label="Riscos críticos" value={riscosCriticos} variant="danger" onClick={() => navigate('/levantamentos')} />
             <StatCard icon={Building2} label="Empresas" value={totalEmpresas} variant="default" onClick={() => navigate('/empresas')} />
-            <StatCard icon={FileText} label="Relatórios" value={concluidos} variant="info" onClick={() => navigate('/relatorios')} />
+            <StatCard icon={FileText} label="Acessar Relatórios" value={concluidos} variant="info" onClick={() => navigate('/relatorios')} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -98,13 +98,16 @@ export function Dashboard() {
                 </div>
 
                 {temDados && (
-                  <div className="relative mb-3">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-                    <input
-                      value={search} onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Buscar por empresa ou código..."
-                      className="w-full h-9 pl-9 pr-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70"
-                    />
+                  <div className="space-y-1 mb-3">
+                    <div className="relative">
+                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+                      <input
+                        value={search} onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Buscar por empresa ou código..."
+                        className="w-full h-9 pl-9 pr-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/70"
+                      />
+                    </div>
+                    {!search && <p className="text-[11px] text-text-secondary px-1">Mostrando os 5 mais recentes</p>}
                   </div>
                 )}
 

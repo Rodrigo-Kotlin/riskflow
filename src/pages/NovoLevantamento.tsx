@@ -99,7 +99,7 @@ export function NovoLevantamento() {
       case 4: return <Step05PerigosRiscos {...stepProps} />
       case 5: return <Step06Controles {...stepProps} />
       case 6: return <Step07Parecer {...stepProps} />
-      case 7: return <Step08Revisao {...stepProps} onFinish={handleFinish} />
+      case 7: return <Step08Revisao {...stepProps} />
       default: return null
     }
   }

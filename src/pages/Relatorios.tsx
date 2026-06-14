@@ -161,34 +161,38 @@ export function Relatorios() {
           </div>
 
           <div className="md:hidden space-y-3">
-            {itensPagina.map((r) => (
-              <div key={r.id} className="bg-card border border-border rounded-xl p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-text-primary truncate">{r.empresaNome}</p>
-                    <p className="text-xs text-text-secondary mt-0.5">{r.tipo} — {formatDate(r.data)}</p>
+            {itensPagina.map((r) => {
+              const lv = levantamentos.find(lv => lv.id === r.levantamentoId)
+              return (
+                <div key={r.id} className="bg-card border border-border rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-text-primary truncate">{r.empresaNome}</p>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-text-secondary mt-0.5">
+                        <span>{r.tipo}</span>
+                        {lv?.codigo && <span className="text-[11px] text-text-secondary">{lv.codigo}</span>}
+                        <span>{formatDate(r.data)}</span>
+                      </div>
+                      <Badge>{r.modelo}</Badge>
+                    </div>
+                    <Badge variant={r.status === 'Gerado' ? 'success' : 'default'}>{r.status}</Badge>
                   </div>
-                  <Badge variant={r.status === 'Gerado' ? 'success' : 'default'}>{r.status}</Badge>
-                </div>
-                <div className="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-border">
-                  <button onClick={() => {
-                    const l = levantamentos.find(lv => lv.id === r.levantamentoId)
-                    if (l) setPreviewLev(l)
-                  }} className="flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 font-medium">
-                    <Eye size={14} /> Visualizar
-                  </button>
-                  {(() => {
-                    const lv = levantamentos.find(lv => lv.id === r.levantamentoId)
-                    if (!lv) return null
-                    return (
+                  <div className="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-border">
+                    <button onClick={() => {
+                      const l = levantamentos.find(lv => lv.id === r.levantamentoId)
+                      if (l) setPreviewLev(l)
+                    }} className="flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 font-medium">
+                      <Eye size={14} /> Visualizar
+                    </button>
+                    {lv && (
                       <PdfDownloadButton levantamento={lv} fileName={`relatorio-${lv.codigo}.pdf`} className="flex items-center gap-1 text-xs text-text-secondary hover:text-text-primary font-medium">
                         <><Download size={14} /> PDF</>
                       </PdfDownloadButton>
-                    )
-                  })()}
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
