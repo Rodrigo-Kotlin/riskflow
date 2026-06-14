@@ -21,10 +21,9 @@ export async function listarSetores(): Promise<Setor[]> {
 
 export async function criarSetor(nome: string): Promise<Setor> {
   const client = getClient()
-  const { data: user } = await client.auth.getUser()
   const { data, error } = await client
     .from('setores')
-    .insert({ nome: nome.trim(), created_by: user?.user?.id })
+    .insert({ nome: nome.trim() })
     .select('id, nome, ativo, created_by, created_at, updated_at')
     .single()
   if (error) {

@@ -1,5 +1,22 @@
 -- Efetiva RiskFlow - Setores, Cargos/Funcoes e Sequencial de Documentos
 -- Migration 00002: Adiciona tabelas de catalogo e controle de codigo
+-- Endurecido: RLS restrito para sequencias_documentos; RPC validado;
+--              partial unique indexes; triggers updated_at; grants minimos.
+
+-- ============================================================
+-- 0. Funcao de trigger: atualiza updated_at automaticamente
+-- ============================================================
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
 
 -- ============================================================
 -- 1. Tabela: setores
@@ -8,14 +25,22 @@ create table if not exists public.setores (
   id uuid primary key default gen_random_uuid(),
   nome text not null,
   ativo boolean not null default true,
-  created_by uuid references auth.users(id) on delete set null,
+  created_by uuid references auth.users(id) on delete cascade default auth.uid(),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint setores_nome_not_empty check (trim(nome) <> '')
 );
 
--- Evitar duplicidade de nome por usuario (case-insensitive)
-create unique index if not exists idx_setores_nome_unique
-  on public.setores (lower(nome), coalesce(created_by, '00000000-0000-0000-0000-000000000000'::uuid));
+-- Limpeza: drop indice composto da versao anterior, se existir
+drop index if exists idx_setores_nome_unique;
+
+-- Impedir duplicidade entre setores padrao (case-insensitive)
+create unique index if not exists idx_setores_nome_padrao
+  on public.setores (lower(nome)) where created_by is null;
+
+-- Impedir duplicidade por usuario (case-insensitive)
+create unique index if not exists idx_setores_nome_usuario
+  on public.setores (created_by, lower(nome)) where created_by is not null;
 
 alter table if exists public.setores enable row level security;
 
@@ -46,13 +71,27 @@ do $$ begin
     );
 end $$;
 
+-- Sem DELETE fisico — desativacao logica via ativo=false
+
+-- Trigger para updated_at
+drop trigger if exists trg_setores_updated_at on public.setores;
+create trigger trg_setores_updated_at
+  before update on public.setores
+  for each row execute function public.set_updated_at();
+
 -- Setores padrao (visiveis para todos os usuarios autenticados)
-insert into public.setores (nome, created_by) values
-  ('Administrativo', null),
-  ('Comercial', null),
-  ('Financeiro', null),
-  ('RH', null)
-on conflict (lower(nome), coalesce(created_by, '00000000-0000-0000-0000-000000000000'::uuid)) do nothing;
+insert into public.setores (nome, created_by)
+select nome, null
+from (values
+  ('Administrativo'),
+  ('Comercial'),
+  ('Financeiro'),
+  ('RH')
+) v(nome)
+where not exists (
+  select 1 from public.setores s
+  where s.created_by is null and lower(s.nome) = lower(v.nome)
+);
 
 -- ============================================================
 -- 2. Tabela: cargos_funcoes
@@ -61,13 +100,20 @@ create table if not exists public.cargos_funcoes (
   id uuid primary key default gen_random_uuid(),
   nome text not null,
   ativo boolean not null default true,
-  created_by uuid references auth.users(id) on delete set null,
+  created_by uuid references auth.users(id) on delete cascade default auth.uid(),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint cargos_nome_not_empty check (trim(nome) <> '')
 );
 
-create unique index if not exists idx_cargos_funcoes_nome_unique
-  on public.cargos_funcoes (lower(nome), coalesce(created_by, '00000000-0000-0000-0000-000000000000'::uuid));
+-- Limpeza: drop indice composto da versao anterior
+drop index if exists idx_cargos_funcoes_nome_unique;
+
+create unique index if not exists idx_cargos_nome_padrao
+  on public.cargos_funcoes (lower(nome)) where created_by is null;
+
+create unique index if not exists idx_cargos_nome_usuario
+  on public.cargos_funcoes (created_by, lower(nome)) where created_by is not null;
 
 alter table if exists public.cargos_funcoes enable row level security;
 
@@ -98,28 +144,40 @@ do $$ begin
     );
 end $$;
 
--- Cargos padrao (visiveis para todos os usuarios autenticados)
-insert into public.cargos_funcoes (nome, created_by) values
-  ('Analista Administrativo', null),
-  ('Analista de RH', null),
-  ('Analista Financeiro', null),
-  ('Assistente Administrativo', null),
-  ('Auxiliar de Serviços Gerais', null),
-  ('Coordenador', null),
-  ('Diretor', null),
-  ('Encarregado', null),
-  ('Engenheiro', null),
-  ('Gerente', null),
-  ('Líder de Produção', null),
-  ('Motorista', null),
-  ('Operador', null),
-  ('Supervisor', null),
-  ('Técnico de Segurança', null),
-  ('Vendedor', null)
-on conflict (lower(nome), coalesce(created_by, '00000000-0000-0000-0000-000000000000'::uuid)) do nothing;
+-- Trigger para updated_at
+drop trigger if exists trg_cargos_updated_at on public.cargos_funcoes;
+create trigger trg_cargos_updated_at
+  before update on public.cargos_funcoes
+  for each row execute function public.set_updated_at();
+
+-- Cargos/Funcoes padrao (visiveis para todos os usuarios autenticados)
+insert into public.cargos_funcoes (nome, created_by)
+select nome, null
+from (values
+  ('Analista Administrativo'),
+  ('Analista de RH'),
+  ('Analista Financeiro'),
+  ('Assistente Administrativo'),
+  ('Auxiliar de Serviços Gerais'),
+  ('Coordenador'),
+  ('Diretor'),
+  ('Encarregado'),
+  ('Engenheiro'),
+  ('Gerente'),
+  ('Líder de Produção'),
+  ('Motorista'),
+  ('Operador'),
+  ('Supervisor'),
+  ('Técnico de Segurança'),
+  ('Vendedor')
+) v(nome)
+where not exists (
+  select 1 from public.cargos_funcoes c
+  where c.created_by is null and lower(c.nome) = lower(v.nome)
+);
 
 -- ============================================================
--- 3. Tabela: sequencias_documentos
+-- 3. Tabela: sequencias_documentos (apenas via RPC)
 -- ============================================================
 create table if not exists public.sequencias_documentos (
   id uuid primary key default gen_random_uuid(),
@@ -128,20 +186,24 @@ create table if not exists public.sequencias_documentos (
   ultimo_numero integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint unique_tipo_ano unique (tipo_documento, ano)
+  constraint unique_tipo_ano unique (tipo_documento, ano),
+  constraint seq_tipo_documento_not_empty check (trim(tipo_documento) <> '')
 );
 
 alter table if exists public.sequencias_documentos enable row level security;
 
-do $$ begin
-  drop policy if exists "sequencias_documentos_all_authenticated" on public.sequencias_documentos;
-  create policy "sequencias_documentos_all_authenticated" on public.sequencias_documentos
-    for all using (auth.role() = 'authenticated')
-    with check (auth.role() = 'authenticated');
-end $$;
+-- Nenhuma policy: default deny.
+-- NENHUM usuario (anon ou authenticated) pode ler ou modificar diretamente.
+-- Apenas a funcao RPC gerar_codigo_documento (security definer) pode escrever.
+
+-- Trigger para updated_at
+drop trigger if exists trg_sequencias_updated_at on public.sequencias_documentos;
+create trigger trg_sequencias_updated_at
+  before update on public.sequencias_documentos
+  for each row execute function public.set_updated_at();
 
 -- ============================================================
--- 4. Funcao RPC: gerar_codigo_documento
+-- 4. Funcao RPC: gerar_codigo_documento (unico ponto de escrita)
 -- ============================================================
 create or replace function public.gerar_codigo_documento(p_tipo_documento text)
 returns text
@@ -150,36 +212,45 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_ano integer;
-  v_numero integer;
-  v_codigo text;
+  v_tipo text;
+  v_ano int;
+  v_numero int;
 begin
-  v_ano := extract(year from now());
+  -- Validacao e normalizacao
+  v_tipo := upper(trim(p_tipo_documento));
+  if v_tipo = '' then
+    raise exception 'tipo_documento nao pode ser vazio';
+  end if;
+  if length(v_tipo) > 10 then
+    raise exception 'tipo_documento muito longo (max 10 caracteres)';
+  end if;
+
+  v_ano := extract(year from now())::int;
 
   insert into public.sequencias_documentos (tipo_documento, ano, ultimo_numero)
-  values (p_tipo_documento, v_ano, 1)
+  values (v_tipo, v_ano, 1)
   on conflict (tipo_documento, ano)
-  do update set ultimo_numero = sequencias_documentos.ultimo_numero + 1
+  do update set ultimo_numero = public.sequencias_documentos.ultimo_numero + 1
   returning ultimo_numero into v_numero;
 
-  v_codigo := format('%s-%s/%s',
-    p_tipo_documento,
+  return format('%s-%s/%s',
+    v_tipo,
     lpad(v_numero::text, 4, '0'),
     lpad((v_ano % 100)::text, 2, '0')
   );
-
-  return v_codigo;
 end;
 $$;
 
--- Garantir que apenas authenticated possa chamar a funcao
-revoke execute on function public.gerar_codigo_documento(text) from public, anon;
+-- Permissoes da funcao
+revoke all on function public.gerar_codigo_documento(text) from public, anon;
 grant execute on function public.gerar_codigo_documento(text) to authenticated;
 
 -- ============================================================
--- 5. Concessoes
+-- 5. Permissoes de tabela (minimas necessarias)
 -- ============================================================
-grant usage on schema public to anon, authenticated;
-grant all on public.setores to anon, authenticated;
-grant all on public.cargos_funcoes to anon, authenticated;
-grant all on public.sequencias_documentos to anon, authenticated;
+-- setores e cargos_funcoes: acesso via RLS (necessario para authenticated)
+grant all on public.setores to authenticated;
+grant all on public.cargos_funcoes to authenticated;
+
+-- sequencias_documentos: apenas via RPC — sem acesso direto
+revoke all on public.sequencias_documentos from anon, authenticated;
