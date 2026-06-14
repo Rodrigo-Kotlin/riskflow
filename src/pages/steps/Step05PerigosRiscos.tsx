@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Risco, RiscoCategoria, Levantamento } from '@/types'
 import { generateId, calcularNivelRisco } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
@@ -7,9 +7,47 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { RiskCard } from '@/components/risk/RiskCard'
 import { RiskTable } from '@/components/risk/RiskTable'
 import { RiskDrawer } from '@/components/risk/RiskDrawer'
-import { bibliotecaRiscos } from '@/data/initialRisks'
-import { Plus, Search, AlertTriangle } from 'lucide-react'
+import { bibliotecaRiscos as initialRisksFallback } from '@/data/initialRisks'
+import { buscarItensBiblioteca } from '@/services/biblioteca-tecnica.service'
+import type { BibliotecaTecnicaItem } from '@/types'
+import { Plus, Search, AlertTriangle, BookOpen } from 'lucide-react'
 import { CATEGORIAS_PERIGO, NIVEIS_RISCO, SITUACAO_RISCO } from '@/constants'
+
+const CATEGORIA_MAP: Record<string, RiscoCategoria> = {
+  'Físico': 'Físicos',
+  'Químico': 'Químicos',
+  'Biológico': 'Biológicos',
+  'Ergonômico': 'Ergonômicos',
+  'Biomecânico': 'Biomecânicos',
+  'Psicossocial': 'Psicossociais/Cognitivos',
+  'Acidente': 'Acidentes/Mecânicos',
+  'Acidentes/Mecânicos': 'Acidentes/Mecânicos',
+  'Mecânico': 'Acidentes/Mecânicos',
+  'Organizacional': 'Organizacionais',
+}
+
+function mapBibliotecaToRisco(item: BibliotecaTecnicaItem): Omit<Risco, 'id'> {
+  return {
+    categoria: CATEGORIA_MAP[item.tipo || ''] || 'Outros',
+    perigo: item.nome,
+    dano: item.descricao || '',
+    severidade: 1,
+    probabilidade: 1,
+    pontuacao: 1,
+    nivel: NIVEIS_RISCO.BAIXO,
+    fonteGeradora: item.aplicacao || '',
+    meioPropagacao: '',
+    tempoExposicao: '',
+    situacao: SITUACAO_RISCO.CONTROLADO,
+    avaliacaoQuantitativa: false,
+    situacaoEncontrada: '',
+    controleFonte: '',
+    controleTrajetoria: '',
+    controleTrabalhador: '',
+    evidencias: [],
+    observacoes: '',
+  }
+}
 
 interface Props {
   data: Levantamento
@@ -41,6 +79,24 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
   const [filterNivel, setFilterNivel] = useState<string>('Todos')
   const [searchPerigo, setSearchPerigo] = useState('')
   const [showLibrary, setShowLibrary] = useState(false)
+  const [libraryItems, setLibraryItems] = useState<Omit<Risco, 'id'>[]>([])
+  const [libraryLoading, setLibraryLoading] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      setLibraryLoading(true)
+      try {
+        const items = await buscarItensBiblioteca('risco')
+        if (!cancelled) setLibraryItems(items.map(mapBibliotecaToRisco))
+      } catch {
+        if (!cancelled) setLibraryItems(initialRisksFallback)
+      } finally {
+        if (!cancelled) setLibraryLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
 
   const riscos: Risco[] = data.riscos || []
 
@@ -147,16 +203,27 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingId ? 'Editar Risco' : 'Adicionar Risco'} size="xl">
         {showLibrary && !editingId && (
           <div className="mb-4">
-            <p className="text-xs font-medium text-text-secondary mb-2">Selecione um risco da biblioteca técnica:</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-              {bibliotecaRiscos.map((r, i) => (
-                <button key={i} onClick={() => loadFromLibrary(r)} className="text-left p-2 border border-border rounded-lg hover:border-brand-500 hover:bg-brand-50 text-xs">
-                  <span className="font-medium text-text-primary">{r.perigo}</span>
-                  <span className="font-medium text-text-secondary ml-2">{r.categoria}</span>
-                  <span className="text-text-secondary block">{r.dano}</span>
-                </button>
-              ))}
+            <div className="flex items-center gap-2 mb-2">
+              <BookOpen size={14} className="text-text-secondary" />
+              <p className="text-xs font-medium text-text-secondary">
+                {libraryLoading ? 'Carregando biblioteca técnica...' : 'Selecione um risco da biblioteca técnica:'}
+              </p>
             </div>
+            {libraryLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <div className="animate-spin h-5 w-5 border-2 border-brand-500 border-t-transparent rounded-full" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                {libraryItems.map((r, i) => (
+                  <button key={i} onClick={() => loadFromLibrary(r)} className="text-left p-2 border border-border rounded-lg hover:border-brand-500 hover:bg-brand-50 text-xs">
+                    <span className="font-medium text-text-primary">{r.perigo}</span>
+                    <span className="font-medium text-text-secondary ml-2">{r.categoria}</span>
+                    {r.dano && <span className="text-text-secondary block">{r.dano}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

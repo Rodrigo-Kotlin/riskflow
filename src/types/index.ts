@@ -203,3 +203,57 @@ export interface Usuario {
   senha: string
   perfil: 'admin' | 'tecnico' | 'visualizador'
 }
+
+export type BibliotecaCategoria =
+  | 'risco' | 'perigo_fator' | 'dano'
+  | 'epi' | 'epc' | 'equipamento_medicao'
+  | 'medida_controle' | 'treinamento' | 'sinalizacao'
+  | 'meio_propagacao' | 'norma_referencia'
+  | 'unidade_medida' | 'metodo_avaliacao'
+
+export interface BibliotecaTecnicaItem {
+  id: string
+  categoria: BibliotecaCategoria
+  nome: string
+  descricao: string | null
+  tipo: string | null
+  grupo: string | null
+  unidade: string | null
+  codigo: string | null
+  norma_referencia: string | null
+  aplicacao: string | null
+  observacoes: string | null
+  tags: string[]
+  metadados: Record<string, unknown>
+  ativo: boolean
+  is_padrao: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type BibliotecaTecnicaPayload = Omit<BibliotecaTecnicaItem, 'id' | 'created_at' | 'updated_at' | 'is_padrao'>
+
+export interface BibliotecaTecnicaFiltro {
+  categoria?: BibliotecaCategoria
+  search?: string
+  ativo?: boolean
+  apenasPadrao?: boolean
+  apenasProprios?: boolean
+}
+
+export const CATEGORIAS_BIBLIOTECA: { value: BibliotecaCategoria; label: string }[] = [
+  { value: 'risco', label: 'Riscos' },
+  { value: 'perigo_fator', label: 'Perigos/Fatores de Risco' },
+  { value: 'dano', label: 'Danos/Consequências' },
+  { value: 'epi', label: 'EPIs' },
+  { value: 'epc', label: 'EPCs' },
+  { value: 'equipamento_medicao', label: 'Equipamentos de Medição' },
+  { value: 'medida_controle', label: 'Medidas de Controle' },
+  { value: 'treinamento', label: 'Treinamentos' },
+  { value: 'sinalizacao', label: 'Sinalizações' },
+  { value: 'meio_propagacao', label: 'Meios de Propagação' },
+  { value: 'norma_referencia', label: 'Normas/Referências Técnicas' },
+  { value: 'unidade_medida', label: 'Unidades de Medida' },
+  { value: 'metodo_avaliacao', label: 'Métodos de Avaliação' },
+]
