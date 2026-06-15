@@ -75,6 +75,16 @@ export function getSupabaseConfigStatus() {
   }
 }
 
+export function getSupabaseErrorMessage(): string | null {
+  const status = getSupabaseConfigStatus()
+  if (status.configured) return null
+  if (!status.hasUrl) return 'VITE_SUPABASE_URL não foi injetada no build.'
+  if (!status.hasKey) return 'VITE_SUPABASE_ANON_KEY não foi injetada no build.'
+  if (!status.urlValid) return 'VITE_SUPABASE_URL inválida. Use a URL base do Supabase, sem /rest/v1.'
+  if (!status.keyValid) return 'Chave Supabase inválida. Use legacy anon key eyJ... ou publishable key sb_publishable_...'
+  return 'Configuração do Supabase incompleta.'
+}
+
 if (import.meta.env.DEV) {
   console.info('[Supabase config]', getSupabaseConfigStatus())
 }

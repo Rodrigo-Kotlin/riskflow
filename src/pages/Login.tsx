@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '@/contexts/AppContext'
-import { supabaseConfigurado } from '@/lib/supabase'
+import { getSupabaseConfigStatus, getSupabaseErrorMessage } from '@/lib/supabase'
 import { signIn, signUp } from '@/services/supabase.service'
 import { Eye, EyeOff, Loader2, UserPlus, LogIn } from 'lucide-react'
 
@@ -49,8 +49,9 @@ export function Login() {
     e.preventDefault()
     setTouched({ nome: true, email: true, senha: true, confirmar: true })
     if (!camposValidos) return
-    if (!supabaseConfigurado) {
-      setError('Supabase não configurado. Verifique se VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY foram injetadas no build.')
+    const configError = getSupabaseErrorMessage()
+    if (configError) {
+      setError(configError)
       return
     }
     setError('')
@@ -80,7 +81,7 @@ export function Login() {
     setLoading(true)
     setError('')
     try {
-      if (supabaseConfigurado) {
+      if (getSupabaseConfigStatus().configured) {
         try {
           await signIn('demo@riskflow.io', 'demo123456')
           navigate('/dashboard')
@@ -115,11 +116,15 @@ export function Login() {
             </div>
 
             <form onSubmit={handleLogin} noValidate className="space-y-4">
-              {!supabaseConfigurado && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                  Supabase não configurado. Verifique se as variáveis de ambiente foram injetadas no build.
-                </div>
-              )}
+              {(() => {
+                const cfgMsg = getSupabaseErrorMessage()
+                if (!cfgMsg) return null
+                return (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                    {cfgMsg}
+                  </div>
+                )
+              })()}
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-risk-high" role="alert">
                   {error}
