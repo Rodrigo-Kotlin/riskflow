@@ -3,7 +3,7 @@ import type { Setor } from '@/types'
 
 function getClient() {
   if (!supabaseConfigurado || !supabase) {
-    throw new Error('Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no ambiente de deploy.')
+    throw new Error('Supabase não configurado. Verifique se VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY foram injetadas no build.')
   }
   return supabase
 }
