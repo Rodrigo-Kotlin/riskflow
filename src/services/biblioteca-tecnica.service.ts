@@ -1,9 +1,10 @@
-import { supabase, supabaseConfigurado } from '@/lib/supabase'
+import { supabase, supabaseConfigurado, getSupabaseErrorMessage } from '@/lib/supabase'
 import type { BibliotecaTecnicaItem, BibliotecaTecnicaPayload, BibliotecaCategoria } from '@/types'
 
 function getClient() {
   if (!supabaseConfigurado || !supabase) {
-    throw new Error('Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no ambiente de deploy.')
+    const msg = getSupabaseErrorMessage() || 'Supabase não configurado.'
+    throw new Error(msg)
   }
   return supabase
 }

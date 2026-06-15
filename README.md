@@ -18,7 +18,7 @@
 
 O sistema guia o usuário por um fluxo de 8 etapas — desde a identificação da empresa contratante até a assinatura digital do parecer técnico — com suporte a medições ambientais, inventário de riscos, plano de ação e geração de relatórios em PDF.
 
-## Funcionalidades
+## Funcionalidades - Ok
 
 - **Autenticação** — Login e cadastro com Supabase Auth; fallback offline com localStorage
 - **Gestão de Empresas** — Cadastro completo (CNPJ, CNAE, grau de risco, endereço, contato)
