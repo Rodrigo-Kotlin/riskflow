@@ -14,12 +14,7 @@ export function useEmpresas() {
       const data = await listEmpresas()
       setEmpresas(data)
     } catch {
-      const stored = localStorage.getItem('riskflow_empresas')
-      if (stored) {
-        try { setEmpresas(JSON.parse(stored)) } catch { setEmpresas([]) }
-      } else {
-        setEmpresas([])
-      }
+      setEmpresas([])
     } finally {
       setLoading(false)
     }
@@ -34,7 +29,6 @@ export function useEmpresas() {
       setEmpresas(prev => [created, ...prev])
     } catch {
       setEmpresas(prev => [...prev, empresa])
-      localStorage.setItem('riskflow_empresas', JSON.stringify([...empresas, empresa]))
     }
   }, [empresas])
 
@@ -44,7 +38,6 @@ export function useEmpresas() {
       setEmpresas(prev => prev.map(e => e.id === updated.id ? updated : e))
     } catch {
       setEmpresas(prev => prev.map(e => e.id === empresa.id ? empresa : e))
-      localStorage.setItem('riskflow_empresas', JSON.stringify(empresas.map(e => e.id === empresa.id ? empresa : e)))
     }
   }, [empresas])
 

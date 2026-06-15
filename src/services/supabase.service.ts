@@ -3,7 +3,7 @@ import type { Empresa, Levantamento, Usuario } from '@/types'
 
 function getClient() {
   if (!supabaseConfigurado || !supabase) {
-    throw new Error('Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no ambiente de deploy.')
+    throw new Error('Servidor não configurado. Verifique as variáveis de ambiente do Supabase.')
   }
   return supabase
 }
@@ -206,14 +206,14 @@ function tratarErroAuth(error: unknown): string {
 
   if (message.includes('Invalid login credentials')) return 'E-mail ou senha inválidos.'
   if (message.includes('Email not confirmed')) return 'E-mail ainda não confirmado. Verifique sua caixa de entrada.'
-  if (message.includes('User already registered')) return 'Este e-mail já está cadastrado.'
-  if (message.includes('Password should be at least 6 characters')) return 'A senha deve ter no mínimo 6 caracteres.'
-  if (message.includes('NetworkError') || message.includes('Failed to fetch')) return 'Erro de conexão com o servidor. Verifique sua internet.'
+  if (message.includes('User already registered')) return 'E-mail já cadastrado.'
+  if (message.includes('Password should be at least 6 characters')) return 'A senha deve ter pelo menos 6 caracteres.'
+  if (message.includes('NetworkError') || message.includes('Failed to fetch')) return 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.'
   if (code === 'over_email_send_rate_limit') return 'Muitas tentativas. Aguarde um momento e tente novamente.'
   if (code === 'over_request_rate_limit') return 'Muitas requisições. Aguarde um instante.'
 
   if (import.meta.env.DEV) console.error('[Supabase Auth]', error)
-  return 'Erro ao conectar ao servidor. Tente novamente mais tarde.'
+  return 'Não foi possível conectar ao servidor. Tente novamente mais tarde.'
 }
 
 // ─── Mappers ────────────────────────────────────────────────────────────────

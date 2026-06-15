@@ -18,7 +18,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       // fallback: always clear local state
     }
     setUser(null)
-    localStorage.removeItem('riskflow_auth')
     navigate('/login')
   }
 

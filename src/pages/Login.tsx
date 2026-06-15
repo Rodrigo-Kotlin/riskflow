@@ -50,7 +50,7 @@ export function Login() {
     setTouched({ nome: true, email: true, senha: true, confirmar: true })
     if (!camposValidos) return
     if (!supabaseConfigurado) {
-      setError('Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no ambiente de deploy.')
+      setError('Servidor não configurado. Verifique as variáveis de ambiente do Supabase.')
       return
     }
     setError('')
@@ -80,19 +80,14 @@ export function Login() {
     setLoading(true)
     setError('')
     try {
-      if (supabaseConfigurado) {
-        try {
-          await signIn('demo@riskflow.io', 'demo123456')
-          navigate('/dashboard')
-          return
-        } catch { /* fallback */ }
+      if (!supabaseConfigurado) {
+        setError('Servidor não configurado. Modo demonstração indisponível.')
+        return
       }
-      const { usuariosMock } = await import('@/data/mock')
-      const userData = usuariosMock[0]
-      localStorage.setItem('riskflow_auth', JSON.stringify(userData))
-      window.location.reload()
+      await signIn('demo@riskflow.io', 'demo123456')
+      navigate('/dashboard')
     } catch {
-      setError('Erro ao carregar modo demonstração.')
+      setError('Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -116,8 +111,8 @@ export function Login() {
 
             <form onSubmit={handleLogin} noValidate className="space-y-4">
               {!supabaseConfigurado && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                  Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no ambiente de deploy.
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800" role="alert">
+                  Servidor não configurado. Verifique as variáveis de ambiente do Supabase.
                 </div>
               )}
               {error && (

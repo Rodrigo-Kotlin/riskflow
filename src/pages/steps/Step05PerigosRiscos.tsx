@@ -93,7 +93,10 @@ export function Step05PerigosRiscos({ data, updateData }: Props) {
         const items = await buscarItensBiblioteca('risco')
         if (!cancelled) setLibraryItems(items.map(mapBibliotecaToRisco))
       } catch {
-        if (!cancelled) setLibraryItems(initialRisksFallback)
+        if (!cancelled) {
+          const isDemo = import.meta.env.VITE_ENABLE_DEMO_DATA === 'true'
+          setLibraryItems(isDemo ? initialRisksFallback : [])
+        }
       } finally {
         if (!cancelled) setLibraryLoading(false)
       }

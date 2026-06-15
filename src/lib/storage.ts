@@ -46,7 +46,7 @@ export function clearAllData(): void {
     keys.push(localStorage.key(i) || '')
   }
   keys.forEach((k) => {
-    if (k !== 'riskflow_auth' && k !== 'riskflow_preferences') {
+    if (k !== 'riskflow_preferences') {
       localStorage.removeItem(k)
     }
   })

@@ -8,8 +8,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: 'auto',
       manifest: false,
       workbox: {
+        cleanupOutdatedCaches: true,
+        navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
       },

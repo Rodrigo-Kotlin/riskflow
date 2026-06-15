@@ -14,10 +14,7 @@ export function useLevantamentos() {
       const data = await listLevantamentos()
       setLevantamentos(data)
     } catch {
-      const stored = localStorage.getItem('riskflow_levantamentos')
-      if (stored) {
-        try { setLevantamentos(JSON.parse(stored)) } catch { setLevantamentos([]) }
-      }
+      setLevantamentos([])
     } finally {
       setLoading(false)
     }

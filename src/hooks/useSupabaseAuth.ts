@@ -8,35 +8,30 @@ export function useSupabaseAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
     const init = async () => {
       if (!supabaseConfigurado || !supabase) {
-        const stored = localStorage.getItem('riskflow_auth')
-        if (stored) {
-          try { setUser(JSON.parse(stored)) } catch { /* ignore */ }
-        }
         setLoading(false)
         return
       }
 
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
+        if (!cancelled && session?.user) {
           const profile = await getProfile(session.user.id)
-          setUser({
-            id: session.user.id,
-            nome: profile?.nome || (session.user.user_metadata?.nome as string) || session.user.email?.split('@')[0] || '',
-            email: profile?.email || session.user.email || '',
-            perfil: (profile?.perfil as Usuario['perfil']) || (session.user.user_metadata?.perfil as Usuario['perfil']) || 'visualizador',
-          })
+          if (!cancelled) {
+            setUser({
+              id: session.user.id,
+              nome: profile?.nome || (session.user.user_metadata?.nome as string) || session.user.email?.split('@')[0] || '',
+              email: profile?.email || session.user.email || '',
+              perfil: (profile?.perfil as Usuario['perfil']) || (session.user.user_metadata?.perfil as Usuario['perfil']) || 'visualizador',
+            })
+          }
         }
       } catch (err) {
-        if (import.meta.env.DEV) console.error('[useSupabaseAuth] getSession error:', err)
-        const stored = localStorage.getItem('riskflow_auth')
-        if (stored) {
-          try { setUser(JSON.parse(stored)) } catch { /* ignore */ }
-        }
+        if (import.meta.env.DEV && !cancelled) console.error('[useSupabaseAuth] getSession error:', err)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
     init()
@@ -54,17 +49,18 @@ export function useSupabaseAuth() {
             perfil: (profile?.perfil as Usuario['perfil']) || (session.user.user_metadata?.perfil as Usuario['perfil']) || 'visualizador',
           }
           setUser(u)
-          localStorage.setItem('riskflow_auth', JSON.stringify(u))
         } catch (err) {
-            if (import.meta.env.DEV) console.error('[useSupabaseAuth] profile on signin error:', err)
-          }
+          if (import.meta.env.DEV) console.error('[useSupabaseAuth] profile on signin error:', err)
+        }
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
-        localStorage.removeItem('riskflow_auth')
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      cancelled = true
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signIn = useCallback(async (email: string, senha: string) => {
@@ -75,7 +71,6 @@ export function useSupabaseAuth() {
   const signOut = useCallback(async () => {
     await supabaseSignOut()
     setUser(null)
-    localStorage.removeItem('riskflow_auth')
   }, [])
 
   return { user, setUser, loading, signIn, signOut }
